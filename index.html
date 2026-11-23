@@ -126,18 +126,6 @@
             transform: translateY(3px);
             box-shadow: 0 1px 0 #ca8a04, 0 0 20px rgba(250, 204, 21, 0.8) !important;
         }
-        /* Highlight Tuts MIDI Saat Ditekan & Cocok dengan Target Kord/Scale */
-        .key-white.midi-pressed {
-            background: linear-gradient(180deg, #bae6fd 0%, #7dd3fc 80%, #38bdf8 100%) !important;
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 #0284c7, 0 0 18px rgba(56, 189, 248, 0.85) !important;
-        }
-        .key-white.midi-target-hit {
-            background: linear-gradient(180deg, #bbf7d0 0%, #4ade80 80%, #16a34a 100%) !important;
-            border-color: #22c55e !important;
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 #15803d, 0 0 24px rgba(34, 197, 94, 0.95) !important;
-        }
 
         /* Tuts Hitam */
         .key-black {
@@ -180,18 +168,6 @@
             background: linear-gradient(180deg, #facc15 0%, #ca8a04 85%, #854d0e 100%) !important;
             transform: translateY(3px);
             box-shadow: 0 1px 0 #713f12, 0 0 20px rgba(250, 204, 21, 0.9) !important;
-        }
-        /* Highlight Tuts Hitam MIDI */
-        .key-black.midi-pressed {
-            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 85%, #0369a1 100%) !important;
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 #075985, 0 0 18px rgba(56, 189, 248, 0.9) !important;
-        }
-        .key-black.midi-target-hit {
-            background: linear-gradient(180deg, #4ade80 0%, #16a34a 85%, #15803d 100%) !important;
-            border-color: #86efac !important;
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 #14532d, 0 0 24px rgba(34, 197, 94, 0.95) !important;
         }
 
         /* Badge Nomor Jari (Fingering Circle) */
@@ -265,39 +241,39 @@
             width: 100%;
             height: 4px;
             cursor: pointer;
-            <!-- Kontrol Cepat Piano (MIDI Controller, Toggle Label & Suara) -->
-            <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
-                <button id="btnMidiConnect" onclick="toggleMidiConnection()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5" title="Hubungkan MIDI Controller via USB OTG / Bluetooth">
-                    <span id="midiStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
-                    <i class="fa-solid fa-plug text-sky-400"></i>
-                    <span id="midiStatusText" class="max-w-[115px] sm:max-w-[180px] truncate">Hubungkan MIDI</span>
-                </button>
+            background: #334155;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header Aplikasi -->
+    <header class="bg-slate-925/95 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40">
+        <div class="max-w-5xl mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                    <i class="fa-solid fa-music text-white text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">
+                        PianoMaster <span class="text-indigo-400">ID</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400 font-medium mt-0.5 hidden sm:block">Kamus Kord, Tangga Nada, Progresi & Iringan Interaktif</p>
+                </div>
+            </div>
+
+            <!-- Kontrol Cepat Piano (Toggle Label & Oktav & Suara) -->
+            <div class="flex items-center gap-1.5 sm:gap-2">
                 <button id="btnToggleLabels" onclick="toggleNoteLabels()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5" title="Tampilkan/Sembunyikan Nama Nada">
                     <i class="fa-solid fa-tag text-indigo-400"></i>
-                    <span class="hidden md:inline">Nada:</span>
+                    <span class="hidden xs:inline">Nama Nada:</span>
                     <span id="labelStatusText" class="text-indigo-400">ON</span>
                 </button>
                 <button id="btnSoundType" onclick="cycleSoundPreset()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5" title="Ganti Karakter Suara Piano">
                     <i class="fa-solid fa-sliders text-emerald-400"></i>
                     <span id="soundPresetText">Grand Warm</span>
                 </button>
-            </div>
-        </div>
-
-        <!-- Baris Kontrol MIDI & Detektor Nada Real-time (Muncul saat MIDI aktif atau tombol diklik) -->
-        <div id="midiControlBar" class="hidden bg-slate-950/95 border-t border-slate-800/90">
-            <div class="max-w-5xl mx-auto px-3 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <div class="flex items-center gap-2 min-w-0">
-                    <span class="px-2 py-0.5 rounded bg-sky-500/15 text-sky-300 border border-sky-500/30 font-bold text-[10px] uppercase shrink-0">MIDI Live</span>
-                    <span id="midiLiveFeedback" class="text-slate-300 font-medium truncate">Tekan tuts pada keyboard MIDI Anda...</span>
-                </div>
-                <div class="flex items-center gap-1.5 ml-auto shrink-0">
-                    <span class="text-[11px] text-slate-400">Oktaf MIDI:</span>
-                    <button onclick="shiftMidiOctave(-1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold border border-slate-700 flex items-center justify-center" title="Turunkan 1 Oktaf">-1</button>
-                    <span id="midiOctaveValue" class="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 font-mono font-bold text-sky-400 text-[11px]">0</span>
-                    <button onclick="shiftMidiOctave(1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold border border-slate-700 flex items-center justify-center" title="Naikkan 1 Oktaf">+1</button>
-                    <button onclick="toggleMidiAutoFold()" id="btnMidiAutoFold" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold text-[11px]" title="Otomatis memetakan oktaf luar (61-key) ke layar C3-B4">Auto-Fit: ON</button>
-                </div>
             </div>
         </div>
 
@@ -1006,16 +982,7 @@
             patBpm: 88,
             isPlayingPat: false,
             patTimer: null,
-            activePatStep: -1,
-
-            // State Web MIDI API (USB OTG / Bluetooth MIDI)
-            midiAccess: null,
-            midiConnected: false,
-            midiDeviceName: '',
-            midiOctaveShift: 0,      // -2, -1, 0, +1, +2
-            midiAutoFitScreen: true, // Otomatis lipat nada luar C3-B4 ke visual layar
-            activeMidiNotes: new Map(), // key: rawMidi, value: { mappedMidi, pitchClass, velocity }
-            targetPitchClasses: new Set() // Pitch class target dari Chord/Scale aktif
+            activePatStep: -1
         };
 
         /**
@@ -1115,97 +1082,6 @@
             } catch (e) {
                 console.error("Audio error:", e);
             }
-        }
-
-        // Map untuk menyimpan suara sustain saat tuts MIDI fisik ditekan lama
-        const sustainedMidiVoices = new Map();
-
-        /**
-         * Memulai suara not sustain khusus untuk MIDI Note On (berhenti saat Note Off)
-         */
-        function startSustainedMidiNote(rawMidi, playMidi, velocity = 0.8) {
-            try {
-                initAudio();
-                stopSustainedMidiNote(rawMidi);
-
-                const now = audioCtx.currentTime;
-                const freq = midiToFreq(playMidi);
-                const preset = state.soundPresets[state.soundPresetIndex];
-
-                const noteGain = audioCtx.createGain();
-                const filter = audioCtx.createBiquadFilter();
-                filter.type = 'lowpass';
-
-                const velCurve = Math.max(0.15, Math.min(1.0, velocity));
-                if (preset === 'Grand Warm') {
-                    filter.frequency.setValueAtTime(freq * (3.5 + velCurve * 3.5), now);
-                    filter.frequency.exponentialRampToValueAtTime(freq * 1.4, now + 2.5);
-                } else if (preset === 'Electric EP') {
-                    filter.frequency.setValueAtTime(freq * (3 + velCurve * 2.5), now);
-                    filter.frequency.exponentialRampToValueAtTime(freq * 1.1, now + 2.5);
-                } else {
-                    filter.frequency.setValueAtTime(freq * (2 + velCurve * 1.5), now);
-                    filter.frequency.exponentialRampToValueAtTime(freq * 0.95, now + 2.5);
-                }
-
-                const peakGain = 0.26 * velCurve;
-                noteGain.gain.setValueAtTime(0.0001, now);
-                noteGain.gain.linearRampToValueAtTime(peakGain, now + 0.01);
-                noteGain.gain.exponentialRampToValueAtTime(peakGain * 0.52, now + 0.35);
-                noteGain.gain.exponentialRampToValueAtTime(peakGain * 0.25, now + 3.5);
-
-                const osc1 = audioCtx.createOscillator();
-                osc1.type = preset === 'Electric EP' ? 'sine' : 'triangle';
-                osc1.frequency.setValueAtTime(freq, now);
-
-                const osc2 = audioCtx.createOscillator();
-                osc2.type = 'sine';
-                osc2.frequency.setValueAtTime(freq * 2, now);
-                const osc2Gain = audioCtx.createGain();
-                osc2Gain.gain.setValueAtTime(preset === 'Electric EP' ? 0.35 : 0.22, now);
-
-                const osc3 = audioCtx.createOscillator();
-                osc3.type = 'sine';
-                osc3.frequency.setValueAtTime(freq * 3, now);
-                const osc3Gain = audioCtx.createGain();
-                osc3Gain.gain.setValueAtTime(preset === 'Soft Felt' ? 0.03 : 0.08 * velCurve, now);
-
-                osc1.connect(filter);
-                osc2.connect(osc2Gain);
-                osc2Gain.connect(filter);
-                osc3.connect(osc3Gain);
-                osc3Gain.connect(filter);
-
-                filter.connect(noteGain);
-                noteGain.connect(audioCtx.destination);
-
-                osc1.start(now);
-                osc2.start(now);
-                osc3.start(now);
-
-                sustainedMidiVoices.set(rawMidi, { noteGain, osc1, osc2, osc3 });
-            } catch (e) {
-                console.error("MIDI Audio start error:", e);
-            }
-        }
-
-        function stopSustainedMidiNote(rawMidi) {
-            const voice = sustainedMidiVoices.get(rawMidi);
-            if (!voice || !audioCtx) return;
-            try {
-                const now = audioCtx.currentTime;
-                voice.noteGain.gain.cancelScheduledValues(now);
-                voice.noteGain.gain.setValueAtTime(Math.max(voice.noteGain.gain.value, 0.001), now);
-                voice.noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
-
-                const stopTime = now + 0.25;
-                voice.osc1.stop(stopTime);
-                voice.osc2.stop(stopTime);
-                voice.osc3.stop(stopTime);
-            } catch (e) {
-                // Abaikan jika osilator sudah berhenti
-            }
-            sustainedMidiVoices.delete(rawMidi);
         }
 
         function flashKeyVisual(midi, ms = 250) {
@@ -1317,9 +1193,6 @@
          * @param {String} summaryText - Teks status di bawah piano
          */
         function renderPianoOverlay(notesData, summaryText = '') {
-            // Simpan pitch class target dari materi aktif (untuk pencocokan latihan MIDI)
-            state.targetPitchClasses = new Set(notesData.map(item => ((item.midi % 12) + 12) % 12));
-
             // Bersihkan highlight sebelumnya
             document.querySelectorAll('.key-white, .key-black').forEach(el => {
                 el.classList.remove('active-rh', 'active-lh');
@@ -1351,233 +1224,701 @@
             if (summaryText) {
                 document.getElementById('activeOverlaySummary').innerHTML = summaryText;
             }
-            refreshMidiKeyVisuals();
         }
 
         function clearPianoHighlights() {
             stopAllPlayback();
-            state.activeMidiNotes.clear();
-            refreshMidiKeyVisuals();
             renderPianoOverlay([], 'Semua highlight direset. Sentuh tuts untuk bermain bebas.');
         }
 
-        /**
-         * ===================================================================
-         * 10B. WEB MIDI API ENGINE (USB OTG ANDROID / BLUETOOTH / DESKTOP)
-         * ===================================================================
-         */
-        async function toggleMidiConnection() {
-            const bar = document.getElementById('midiControlBar');
-            bar.classList.remove('hidden');
+        function toggleNoteLabels() {
+            state.showLabels = !state.showLabels;
+            updateLabelVisibility();
+        }
 
-            if (!navigator.requestMIDIAccess) {
-                showMidiBannerMessage(
-                    `<span class="text-amber-400 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Browser Tidak Mendukung Web MIDI:</span> Gunakan <strong>Google Chrome</strong> di HP Android (dengan kabel USB OTG) atau Chrome/Edge di PC. Safari iOS belum mendukung Web MIDI.`,
-                    'unsupported'
-                );
+        function updateLabelVisibility() {
+            const labels = document.querySelectorAll('.note-label');
+            labels.forEach(lbl => {
+                lbl.style.opacity = state.showLabels ? '1' : '0';
+            });
+            document.getElementById('labelStatusText').textContent = state.showLabels ? 'ON' : 'OFF';
+        }
+
+        function cycleSoundPreset() {
+            state.soundPresetIndex = (state.soundPresetIndex + 1) % state.soundPresets.length;
+            const name = state.soundPresets[state.soundPresetIndex];
+            document.getElementById('soundPresetText').textContent = name;
+            // Bunyikan nada C4 sebagai preview suara baru
+            playPianoNote(60, 0.8, 0.7);
+        }
+
+        /**
+         * 5. HELPER PERHITUNGAN NADA KORD & INVERSI
+         */
+        function getChordVoicing(rootPitch, typeId, inversion = 0, baseOctaveMidi = 60) {
+            const chordObj = CHORD_TYPES.find(c => c.id === typeId) || CHORD_TYPES[0];
+            let intervals = [...chordObj.intervals];
+
+            // Terapkan Inversi (pindahkan nada terbawah naik 1 oktaf = +12 semitone)
+            const invCount = inversion % intervals.length;
+            for (let i = 0; i < invCount; i++) {
+                const lowest = intervals.shift();
+                intervals.push(lowest + 12);
+            }
+
+            // Hitung MIDI notes
+            let midis = intervals.map(iv => baseOctaveMidi + rootPitch + iv);
+
+            // Pastikan muat dengan nyaman di layar C3..B4 (48..71)
+            while (midis[midis.length - 1] > END_MIDI) {
+                midis = midis.map(m => m - 12);
+            }
+            while (midis[0] < START_MIDI) {
+                midis = midis.map(m => m + 12);
+            }
+
+            const noteNames = midis.map(m => NOTE_NAMES_SHARP[m % 12]);
+            return { chordObj, midis, noteNames, invCount };
+        }
+
+        /**
+         * 6. LOGIKA TAB 1: CHORD CHEAT
+         */
+        function initChordTabUI() {
+            const rootGrid = document.getElementById('chordRootGrid');
+            rootGrid.innerHTML = NOTE_NAMES_DISPLAY.map((name, idx) => `
+                <button onclick="setChordRoot(${idx})" id="croot-${idx}" class="croot-btn py-2 px-1.5 rounded-xl text-xs font-bold border transition ${idx === 0 ? 'bg-indigo-600 text-white border-indigo-400 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'}">
+                    ${name}
+                </button>
+            `).join('');
+
+            const typeGrid = document.getElementById('chordTypeGrid');
+            typeGrid.innerHTML = CHORD_TYPES.map(t => `
+                <button onclick="setChordType('${t.id}')" id="ctype-${t.id}" class="ctype-btn py-2 px-2 rounded-xl text-xs font-bold border transition text-center ${t.id === 'maj' ? 'bg-indigo-600 text-white border-indigo-400 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'}">
+                    ${t.name}
+                </button>
+            `).join('');
+        }
+
+        function setChordRoot(idx) {
+            state.chordRoot = idx;
+            document.querySelectorAll('.croot-btn').forEach((btn, i) => {
+                btn.className = `croot-btn py-2 px-1.5 rounded-xl text-xs font-bold border transition ${i === idx ? 'bg-indigo-600 text-white border-indigo-400 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'}`;
+            });
+            updateChordDisplay(true);
+        }
+
+        function setChordType(typeId) {
+            state.chordType = typeId;
+            document.querySelectorAll('.ctype-btn').forEach(btn => {
+                const isSelected = btn.id === `ctype-${typeId}`;
+                btn.className = `ctype-btn py-2 px-2 rounded-xl text-xs font-bold border transition text-center ${isSelected ? 'bg-indigo-600 text-white border-indigo-400 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'}`;
+            });
+            updateChordDisplay(true);
+        }
+
+        function setChordInversion(inv) {
+            state.chordInversion = inv;
+            [0, 1, 2].forEach(i => {
+                const btn = document.getElementById(`inv-btn-${i}`);
+                btn.className = `inv-btn py-2 px-2 rounded-lg text-xs font-bold transition ${i === inv ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`;
+            });
+            updateChordDisplay(true);
+        }
+
+        function setChordHand(hand) {
+            state.chordHand = hand;
+            ['RH', 'LH'].forEach(h => {
+                const btn = document.getElementById(`chord-hand-${h}`);
+                const activeBg = h === 'RH' ? 'bg-indigo-600 text-white' : 'bg-emerald-600 text-white';
+                btn.className = `py-2 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${h === hand ? activeBg : 'text-slate-400 hover:text-white'}`;
+            });
+            updateChordDisplay(false);
+        }
+
+        function updateChordDisplay(autoPlay = false) {
+            const baseMidi = state.chordHand === 'RH' ? 60 : 48; // RH di oktaf C4, LH di oktaf C3
+            const { chordObj, midis, noteNames, invCount } = getChordVoicing(state.chordRoot, state.chordType, state.chordInversion, baseMidi);
+            const rootName = NOTE_NAMES_SHARP[state.chordRoot];
+            const invLabels = ['Root Position', '1st Inversion (Balikan 1)', '2nd Inversion (Balikan 2)'];
+
+            // Ambil array jari sesuai tangan & inversi
+            const fingerMatrix = state.chordHand === 'RH' ? chordObj.fingersRH : chordObj.fingersLH;
+            const fingers = fingerMatrix[invCount] || fingerMatrix[0];
+
+            // Update UI Kartu Kord
+            document.getElementById('chordTitleDisplay').textContent = `${rootName} ${chordObj.name}`;
+            document.getElementById('chordInversionBadge').textContent = invLabels[invCount] || 'Root Position';
+            document.getElementById('chordDescDisplay').textContent = chordObj.desc;
+            document.getElementById('chordFormulaDisplay').textContent = chordObj.formula;
+            document.getElementById('chordNotesDisplay').textContent = noteNames.join(' - ');
+            document.getElementById('chordHandLabel').textContent = state.chordHand === 'RH' ? 'Kanan' : 'Kiri';
+            document.getElementById('chordFingersDisplay').textContent = fingers.join(' - ');
+
+            // Update Virtual Piano
+            const overlay = midis.map((m, idx) => ({
+                midi: m,
+                finger: fingers[idx] || '',
+                hand: state.chordHand
+            }));
+
+            renderPianoOverlay(
+                overlay,
+                `<span class="text-indigo-400 font-bold">${rootName}${chordObj.symbol}</span> (${noteNames.join(' - ')}) • Jari ${state.chordHand}: <span class="text-amber-400 font-bold">${fingers.join('-')}</span>`
+            );
+
+            if (autoPlay) {
+                playCurrentChord('block');
+            }
+        }
+
+        function playCurrentChord(mode = 'block') {
+            stopAllPlayback();
+            const baseMidi = state.chordHand === 'RH' ? 60 : 48;
+            const { midis } = getChordVoicing(state.chordRoot, state.chordType, state.chordInversion, baseMidi);
+
+            if (mode === 'block') {
+                midis.forEach(m => playPianoNote(m, 1.4, 0.75));
+            } else {
+                // Arpeggio naik
+                midis.forEach((m, idx) => {
+                    setTimeout(() => playPianoNote(m, 1.1, 0.75), idx * 140);
+                });
+            }
+        }
+
+        /**
+         * 7. LOGIKA TAB 2: SCALE CHEAT
+         */
+        function initScaleTabUI() {
+            const rootGrid = document.getElementById('scaleRootGrid');
+            rootGrid.innerHTML = NOTE_NAMES_DISPLAY.map((name, idx) => `
+                <button onclick="setScaleRoot(${idx})" id="sroot-${idx}" class="sroot-btn py-2 px-1.5 rounded-xl text-xs font-bold border transition ${idx === 0 ? 'bg-emerald-600 text-white border-emerald-400 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'}">
+                    ${name}
+                </button>
+            `).join('');
+
+            const typeGrid = document.getElementById('scaleTypeGrid');
+            typeGrid.innerHTML = SCALE_TYPES.map(s => `
+                <button onclick="setScaleType('${s.id}')" id="stype-${s.id}" class="stype-btn py-2.5 px-3 rounded-xl text-xs font-bold border transition text-left ${s.id === 'major' ? 'bg-emerald-600 text-white border-emerald-400 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'}">
+                    ${s.name}
+                </button>
+            `).join('');
+        }
+
+        function setScaleRoot(idx) {
+            state.scaleRoot = idx;
+            document.querySelectorAll('.sroot-btn').forEach((btn, i) => {
+                btn.className = `sroot-btn py-2 px-1.5 rounded-xl text-xs font-bold border transition ${i === idx ? 'bg-emerald-600 text-white border-emerald-400 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'}`;
+            });
+            updateScaleDisplay();
+        }
+
+        function setScaleType(typeId) {
+            state.scaleType = typeId;
+            document.querySelectorAll('.stype-btn').forEach(btn => {
+                const isSelected = btn.id === `stype-${typeId}`;
+                btn.className = `stype-btn py-2.5 px-3 rounded-xl text-xs font-bold border transition text-left ${isSelected ? 'bg-emerald-600 text-white border-emerald-400 shadow-md' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'}`;
+            });
+            updateScaleDisplay();
+        }
+
+        function setScaleHand(hand) {
+            state.scaleHand = hand;
+            ['RH', 'LH'].forEach(h => {
+                const btn = document.getElementById(`scale-hand-${h}`);
+                const activeBg = h === 'RH' ? 'bg-indigo-600 text-white' : 'bg-emerald-600 text-white';
+                btn.className = `py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${h === hand ? activeBg : 'text-slate-400 hover:text-white'}`;
+            });
+            updateScaleDisplay();
+        }
+
+        function updateScaleBpm(val) {
+            state.scaleBpm = parseInt(val);
+            document.getElementById('scaleBpmValue').textContent = `${val} BPM`;
+        }
+
+        function getCurrentScaleData() {
+            const scaleObj = SCALE_TYPES.find(s => s.id === state.scaleType) || SCALE_TYPES[0];
+            // Pilih oktaf dasar: C3 (48) untuk nada rendah atau C4 (60) jika muat
+            let baseMidi = state.scaleRoot <= 5 ? 60 + state.scaleRoot : 48 + state.scaleRoot;
+            const midis = scaleObj.intervals.map(iv => baseMidi + iv);
+            const noteNames = midis.map(m => NOTE_NAMES_SHARP[m % 12]);
+            const fingers = state.scaleHand === 'RH' ? scaleObj.fingersRH : scaleObj.fingersLH;
+            return { scaleObj, midis, noteNames, fingers };
+        }
+
+        function updateScaleDisplay() {
+            const { scaleObj, midis, noteNames, fingers } = getCurrentScaleData();
+            const rootName = NOTE_NAMES_SHARP[state.scaleRoot];
+
+            document.getElementById('scaleTitleDisplay').textContent = `${rootName} ${scaleObj.name}`;
+            document.getElementById('scaleDescDisplay').textContent = scaleObj.desc;
+            document.getElementById('scaleNotesDisplay').textContent = noteNames.join(' - ');
+            document.getElementById('scaleHandLabel').textContent = state.scaleHand === 'RH' ? 'Tangan Kanan' : 'Tangan Kiri';
+            document.getElementById('scaleFingersDisplay').textContent = fingers.join(' - ');
+
+            // Tampilkan di piano (untuk nada oktaf atas yang sama dengan root, tampilkan jari 1/5)
+            const overlay = [];
+            midis.forEach((m, idx) => {
+                // Hindari menimpa badge root bawah dengan root atas pada tampilan statis
+                if (idx < midis.length - 1) {
+                    overlay.push({
+                        midi: m,
+                        finger: fingers[idx],
+                        hand: state.scaleHand
+                    });
+                }
+            });
+
+            renderPianoOverlay(
+                overlay,
+                `Tangga Nada <span class="text-emerald-400 font-bold">${rootName} ${scaleObj.name}</span> • Jari: <span class="text-amber-400 font-bold">${fingers.join('-')}</span>`
+            );
+        }
+
+        function togglePlayScale() {
+            if (state.isPlayingScale) {
+                stopAllPlayback();
                 return;
             }
+            stopAllPlayback();
 
-            try {
-                if (!state.midiAccess) {
-                    state.midiAccess = await navigator.requestMIDIAccess({ sysex: false });
-                    // Auto-detect hot-plugging saat kabel USB OTG dipasang/dicabut
-                    state.midiAccess.onstatechange = (event) => {
-                        bindMidiInputs();
-                    };
+            const { midis, fingers } = getCurrentScaleData();
+            // Buat urutan naik lalu turun: [0,1,2,3,4,5,6,7, 6,5,4,3,2,1,0]
+            const sequence = [...midis];
+            const fingerSeq = [...fingers];
+            for (let i = midis.length - 2; i >= 0; i--) {
+                sequence.push(midis[i]);
+                fingerSeq.push(fingers[i]);
+            }
+
+            state.isPlayingScale = true;
+            document.getElementById('scalePlayIcon').className = 'fa-solid fa-stop';
+            document.getElementById('scalePlayText').textContent = 'Berhenti';
+            updateMainPlayButton(true);
+
+            let step = 0;
+            const playStep = () => {
+                if (!state.isPlayingScale) return;
+
+                const midi = sequence[step];
+                const finger = fingerSeq[step];
+                const beatMs = (60 / state.scaleBpm) * 1000 * 0.75; // Eighth-note feel
+
+                playPianoNote(midi, beatMs / 900, 0.8);
+
+                // Highlight tuts aktif dengan nomor jari saat berjalan
+                renderPianoOverlay(
+                    [{ midi, finger, hand: state.scaleHand }],
+                    `Memainkan: <span class="text-amber-300 font-bold">${NOTE_NAMES_SHARP[midi % 12]}</span> (Jari <strong>${finger}</strong>)`
+                );
+
+                step++;
+                if (step >= sequence.length) {
+                    setTimeout(() => {
+                        stopAllPlayback();
+                        updateScaleDisplay();
+                    }, beatMs);
+                } else {
+                    state.scaleTimer = setTimeout(playStep, beatMs);
                 }
-                bindMidiInputs();
-            } catch (err) {
-                console.error('Web MIDI Error:', err);
-                showMidiBannerMessage(
-                    `<span class="text-rose-400 font-bold">Gagal Mengakses MIDI:</span> Pastikan izin perangkat MIDI diizinkan dan kabel OTG terpasang.`,
-                    'error'
-                );
-            }
-        }
+            };
 
-        function bindMidiInputs() {
-            if (!state.midiAccess) return;
-            const inputs = Array.from(state.midiAccess.inputs.values());
-            const connectedInputs = inputs.filter(inp => inp.state === 'connected');
-
-            if (connectedInputs.length > 0) {
-                state.midiConnected = true;
-                state.midiDeviceName = connectedInputs[0].name || 'MIDI Keyboard';
-
-                connectedInputs.forEach(input => {
-                    input.onmidimessage = handleMidiMessage;
-                });
-
-                updateMidiHeaderUI(true, state.midiDeviceName);
-                showMidiBannerMessage(
-                    `<span class="text-emerald-400 font-bold">Terhubung ke ${state.midiDeviceName}</span> — Mainkan tuts fisik untuk bunyi & latihan interaktif!`,
-                    'connected'
-                );
-            } else {
-                state.midiConnected = false;
-                state.midiDeviceName = '';
-                state.activeMidiNotes.clear();
-                refreshMidiKeyVisuals();
-                updateMidiHeaderUI(false, '');
-                showMidiBannerMessage(
-                    `<span class="text-amber-300 font-semibold">Menunggu Perangkat MIDI...</span> Colokkan kabel USB OTG ke keyboard MIDI (misal Rixton 61-key) atau sambungkan Bluetooth MIDI.`,
-                    'waiting'
-                );
-            }
-        }
-
-        function updateMidiHeaderUI(isConnected, deviceName) {
-            const btn = document.getElementById('btnMidiConnect');
-            const dot = document.getElementById('midiStatusDot');
-            const text = document.getElementById('midiStatusText');
-
-            if (isConnected) {
-                btn.className = 'px-2.5 py-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900/80 text-xs font-semibold text-emerald-200 border border-emerald-500/50 transition flex items-center gap-1.5 shadow-sm shadow-emerald-500/20';
-                dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
-                text.textContent = `MIDI: ${deviceName}`;
-            } else {
-                btn.className = 'px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5';
-                dot.className = 'w-2 h-2 rounded-full bg-amber-400';
-                text.textContent = 'Hubungkan MIDI';
-            }
-        }
-
-        function showMidiBannerMessage(htmlContent) {
-            const bar = document.getElementById('midiControlBar');
-            const feedback = document.getElementById('midiLiveFeedback');
-            if (bar) bar.classList.remove('hidden');
-            if (feedback) feedback.innerHTML = htmlContent;
-        }
-
-        function shiftMidiOctave(delta) {
-            state.midiOctaveShift = Math.max(-2, Math.min(2, state.midiOctaveShift + delta));
-            const label = state.midiOctaveShift > 0 ? `+${state.midiOctaveShift}` : `${state.midiOctaveShift}`;
-            document.getElementById('midiOctaveValue').textContent = label;
-        }
-
-        function toggleMidiAutoFold() {
-            state.midiAutoFitScreen = !state.midiAutoFitScreen;
-            const btn = document.getElementById('btnMidiAutoFold');
-            if (state.midiAutoFitScreen) {
-                btn.textContent = 'Auto-Fit: ON';
-                btn.className = 'px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold text-[11px]';
-            } else {
-                btn.textContent = 'Auto-Fit: OFF';
-                btn.className = 'px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 font-semibold text-[11px]';
-            }
+            playStep();
         }
 
         /**
-         * Handler utama pesan MIDI (Note On 0x90 & Note Off 0x80)
+         * 8. LOGIKA TAB 3: CHORD PROGRESSION
          */
-        function handleMidiMessage(message) {
-            const [status, noteNumber, velocity] = message.data;
-            const command = status & 0xf0;
+        function initProgressionTabUI() {
+            const keyGrid = document.getElementById('progKeyGrid');
+            const commonKeys = [0, 2, 4, 5, 7, 9, 10, 11]; // C, D, E, F, G, A, Bb, B
+            keyGrid.innerHTML = commonKeys.map(k => `
+                <button onclick="setProgKey(${k})" id="pkey-${k}" class="pkey-btn px-3 py-1.5 rounded-lg text-xs font-bold border transition ${k === 0 ? 'bg-indigo-600 text-white border-indigo-400' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'}">
+                    ${NOTE_NAMES_SHARP[k]} Major
+                </button>
+            `).join('');
 
-            // Note On (144 / 0x90) dengan velocity > 0
-            if (command === 144 && velocity > 0) {
-                const shiftedMidi = noteNumber + (state.midiOctaveShift * 12);
-                const velNorm = velocity / 127;
-
-                // Bunyikan audio piano sesuai pitch yang telah di-shift oktaf
-                startSustainedMidiNote(noteNumber, shiftedMidi, velNorm);
-
-                // Tentukan posisi tuts visual di layar (C3..B4 = 48..71)
-                let visualMidi = shiftedMidi;
-                if (state.midiAutoFitScreen) {
-                    while (visualMidi < START_MIDI) visualMidi += 12;
-                    while (visualMidi > END_MIDI) visualMidi -= 12;
-                }
-
-                const pitchClass = ((shiftedMidi % 12) + 12) % 12;
-                state.activeMidiNotes.set(noteNumber, {
-                    visualMidi,
-                    shiftedMidi,
-                    pitchClass,
-                    velocity
-                });
-
-                refreshMidiKeyVisuals();
-                updateMidiLiveDetector();
-            }
-            // Note Off (128 / 0x80) atau Note On dengan velocity === 0
-            else if (command === 128 || (command === 144 && velocity === 0)) {
-                stopSustainedMidiNote(noteNumber);
-                state.activeMidiNotes.delete(noteNumber);
-                refreshMidiKeyVisuals();
-                updateMidiLiveDetector();
-            }
+            const presetsGrid = document.getElementById('progPresetsGrid');
+            presetsGrid.innerHTML = PROGRESSION_PRESETS.map(p => `
+                <button onclick="setProgPreset('${p.id}')" id="ppreset-${p.id}" class="ppreset-btn p-3.5 rounded-xl border text-left transition flex flex-col justify-between ${p.id === 'pop4' ? 'bg-indigo-950/50 border-indigo-500 text-white shadow-md' : 'bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-600'}">
+                    <div>
+                        <div class="font-bold text-xs sm:text-sm text-white">${p.name}</div>
+                        <div class="font-mono text-xs text-indigo-400 font-bold mt-1">${p.roman}</div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-2 line-clamp-2">${p.desc}</p>
+                </button>
+            `).join('');
         }
 
-        /**
-         * Menyalakan warna tuts virtual piano sesuai input MIDI & menandai hijau jika cocok target
-         */
-        function refreshMidiKeyVisuals() {
-            document.querySelectorAll('.key-white, .key-black').forEach(el => {
-                el.classList.remove('midi-pressed', 'midi-target-hit');
+        function setProgKey(k) {
+            state.progKey = k;
+            document.querySelectorAll('.pkey-btn').forEach(btn => {
+                const isSel = btn.id === `pkey-${k}`;
+                btn.className = `pkey-btn px-3 py-1.5 rounded-lg text-xs font-bold border transition ${isSel ? 'bg-indigo-600 text-white border-indigo-400' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'}`;
             });
+            updateProgressionDisplay();
+        }
 
-            state.activeMidiNotes.forEach(info => {
-                const keyEl = document.querySelector(`[data-midi="${info.visualMidi}"]`);
-                if (keyEl) {
-                    const isTargetHit = state.targetPitchClasses.has(info.pitchClass);
-                    keyEl.classList.add(isTargetHit ? 'midi-target-hit' : 'midi-pressed');
-                }
+        function setProgPreset(id) {
+            state.progPresetId = id;
+            document.querySelectorAll('.ppreset-btn').forEach(btn => {
+                const isSel = btn.id === `ppreset-${id}`;
+                btn.className = `ppreset-btn p-3.5 rounded-xl border text-left transition flex flex-col justify-between ${isSel ? 'bg-indigo-950/50 border-indigo-500 text-white shadow-md' : 'bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-600'}`;
+            });
+            updateProgressionDisplay();
+        }
+
+        function updateProgBpm(val) {
+            state.progBpm = parseInt(val);
+            document.getElementById('progBpmValue').textContent = `${val} BPM`;
+        }
+
+        function getResolvedProgressionChords() {
+            const preset = PROGRESSION_PRESETS.find(p => p.id === state.progPresetId) || PROGRESSION_PRESETS[0];
+            return preset.steps.map((step, index) => {
+                const chordRoot = (state.progKey + step.semitone) % 12;
+                const { chordObj, midis, noteNames } = getChordVoicing(chordRoot, step.type, 0, 60);
+                // Bass note di tangan kiri (oktaf C3: 48..59)
+                const bassMidi = 48 + chordRoot;
+                return {
+                    index,
+                    roman: step.roman,
+                    chordName: `${NOTE_NAMES_SHARP[chordRoot]}${chordObj.symbol}`,
+                    fullName: `${NOTE_NAMES_SHARP[chordRoot]} ${chordObj.name}`,
+                    bassMidi,
+                    rhMidis: midis,
+                    noteNames,
+                    fingersRH: chordObj.fingersRH[0]
+                };
             });
         }
 
-        /**
-         * Detektor Nada & Kord Real-Time saat menekan tuts MIDI
-         */
-        function updateMidiLiveDetector() {
-            const feedback = document.getElementById('midiLiveFeedback');
-            if (!feedback) return;
+        function updateProgressionDisplay() {
+            const preset = PROGRESSION_PRESETS.find(p => p.id === state.progPresetId) || PROGRESSION_PRESETS[0];
+            const chords = getResolvedProgressionChords();
 
-            if (state.activeMidiNotes.size === 0) {
-                feedback.innerHTML = `<span class="text-slate-400">Siap • Tekan tuts pada <strong>${state.midiDeviceName || 'MIDI Keyboard'}</strong></span>`;
+            document.getElementById('progTitleDisplay').textContent = `${preset.name} (Key ${NOTE_NAMES_SHARP[state.progKey]})`;
+            document.getElementById('progDescDisplay').textContent = preset.desc;
+
+            const container = document.getElementById('progChordsContainer');
+            container.innerHTML = chords.map((c, idx) => `
+                <div onclick="previewProgressionStep(${idx})" id="prog-card-${idx}" class="prog-card cursor-pointer rounded-xl p-3 border transition bg-slate-950 border-slate-800 hover:border-indigo-500/70">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono font-bold text-indigo-400">${c.roman}</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Bar ${idx + 1}</span>
+                    </div>
+                    <div class="text-lg sm:text-xl font-extrabold text-white mt-1">${c.chordName}</div>
+                    <div class="text-[11px] font-mono text-slate-400 mt-1">${c.noteNames.join(' - ')}</div>
+                </div>
+            `).join('');
+
+            // Tampilkan kord pertama di piano secara default
+            previewProgressionStep(0, false);
+        }
+
+        function previewProgressionStep(idx, playSound = true) {
+            const chords = getResolvedProgressionChords();
+            const item = chords[idx];
+            if (!item) return;
+
+            // Highlight kartu aktif
+            document.querySelectorAll('.prog-card').forEach((card, i) => {
+                if (i === idx) {
+                    card.className = 'prog-card cursor-pointer rounded-xl p-3 border transition bg-indigo-950/60 border-indigo-400 shadow-lg shadow-indigo-500/20 scale-[1.02]';
+                } else {
+                    card.className = 'prog-card cursor-pointer rounded-xl p-3 border transition bg-slate-950 border-slate-800 hover:border-indigo-500/70';
+                }
+            });
+
+            // Gabungkan Bass Tangan Kiri (jari 5) + Kord Tangan Kanan
+            const overlay = [
+                { midi: item.bassMidi, finger: 5, hand: 'LH' },
+                ...item.rhMidis.map((m, i) => ({
+                    midi: m,
+                    finger: item.fingersRH[i] || '',
+                    hand: 'RH'
+                }))
+            ];
+
+            renderPianoOverlay(
+                overlay,
+                `Progresi [${item.roman}]: <span class="text-indigo-300 font-bold">${item.fullName}</span> • Bass LH: <strong>${NOTE_NAMES_SHARP[item.bassMidi % 12]}</strong> | Kord RH: <strong>${item.noteNames.join('-')}</strong>`
+            );
+
+            if (playSound) {
+                playPianoNote(item.bassMidi, 1.3, 0.8);
+                item.rhMidis.forEach(m => playPianoNote(m, 1.3, 0.7));
+            }
+        }
+
+        function togglePlayProgression() {
+            if (state.isPlayingProg) {
+                stopAllPlayback();
                 return;
             }
+            stopAllPlayback();
 
-            const notesArr = Array.from(state.activeMidiNotes.values()).sort((a, b) => a.shiftedMidi - b.shiftedMidi);
-            const noteNames = notesArr.map(n => {
-                const name = NOTE_NAMES_SHARP[n.pitchClass];
-                const oct = Math.floor(n.shiftedMidi / 12) - 1;
-                return `${name}${oct}`;
-            });
+            const chords = getResolvedProgressionChords();
+            state.isPlayingProg = true;
+            document.getElementById('progPlayIcon').className = 'fa-solid fa-stop';
+            document.getElementById('progPlayText').textContent = 'Berhenti';
+            updateMainPlayButton(true);
 
-            const uniquePitches = [...new Set(notesArr.map(n => n.pitchClass))];
-            const detectedChord = detectSimpleChordName(uniquePitches);
-            const allMatchTarget = state.targetPitchClasses.size > 0 && notesArr.every(n => state.targetPitchClasses.has(n.pitchClass));
+            let step = 0;
+            const barDurationMs = (60 / state.progBpm) * 1000 * 2; // 2 ketukan per kord agar enak didengar
 
-            const badgeStatus = allMatchTarget
-                ? `<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-[10px] ml-1"><i class="fa-solid fa-check mr-0.5"></i>Cocok Target!</span>`
-                : '';
+            const playBar = () => {
+                if (!state.isPlayingProg) return;
+                previewProgressionStep(step, true);
 
-            feedback.innerHTML = `
-                <span class="text-sky-300 font-mono font-bold">${noteNames.join(' - ')}</span>
-                ${detectedChord ? `<span class="text-amber-300 font-bold ml-1.5">[Kord: ${detectedChord}]</span>` : ''}
-                ${badgeStatus}
-            `;
+                step = (step + 1) % chords.length;
+                state.progTimer = setTimeout(playBar, barDurationMs);
+            };
+
+            playBar();
         }
 
-        function detectSimpleChordName(uniquePitches) {
-            if (uniquePitches.length < 3) return '';
-            for (const root of uniquePitches) {
-                const intervals = uniquePitches.map(p => (p - root + 12) % 12).sort((a, b) => a - b);
-                const key = intervals.join(',');
-                const rootName = NOTE_NAMES_SHARP[root];
-                if (key === '0,4,7') return `${rootName} Major`;
-                if (key === '0,3,7') return `${rootName}m`;
-                if (key === '0,4,7,10') return `${rootName}7`;
-                if (key === '0,4,7,11') return `${rootName}Maj7`;
-                if (key === '0,3,7,10') return `${rootName}m7`;
-                if (key === '0,2,7') return `${rootName}sus2`;
-                if (key === '0,5,7') return `${rootName}sus4`;
-                if (key === '0,3,6') return `${rootName}dim`;
-                if (key === '0,4,8') return `${rootName}aug`;
+        /**
+         * 9. LOGIKA TAB 4: ACCOMPANIMENT PATTERNS (POLA IRINGAN)
+         */
+        function initPatternTabUI() {
+            const presetsGrid = document.getElementById('patternPresetsGrid');
+            presetsGrid.innerHTML = ACCOMPANIMENT_PATTERNS.map(p => `
+                <button onclick="setPatternPreset('${p.id}')" id="pat-btn-${p.id}" class="pat-btn p-3.5 rounded-xl border text-left transition ${p.id === 'ballad' ? 'bg-emerald-950/50 border-emerald-500 text-white shadow-md' : 'bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-600'}">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-xs sm:text-sm text-white">${p.name}</span>
+                        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400">${p.timeSig}</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1.5 line-clamp-2">${p.desc}</p>
+                </button>
+            `).join('');
+
+            // Pilihan kord latihan iringan
+            const sampleChords = [
+                { root: 0, type: 'maj', label: 'C Major' },
+                { root: 9, type: 'min', label: 'A Minor' },
+                { root: 5, type: 'maj', label: 'F Major' },
+                { root: 7, type: 'maj', label: 'G Major' },
+                { root: 2, type: 'min', label: 'D Minor' },
+                { root: 4, type: 'min', label: 'E Minor' }
+            ];
+
+            const chordGrid = document.getElementById('patChordSelectGrid');
+            chordGrid.innerHTML = sampleChords.map((sc, i) => `
+                <button onclick="setPatternChord(${sc.root}, '${sc.type}', ${i})" id="patchord-${i}" class="patchord-btn px-3 py-1.5 rounded-lg text-xs font-bold border transition ${i === 0 ? 'bg-emerald-600 text-white border-emerald-400' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'}">
+                    ${sc.label}
+                </button>
+            `).join('');
+        }
+
+        function setPatternPreset(id) {
+            const wasPlaying = state.isPlayingPat;
+            stopAllPlayback();
+            state.patId = id;
+
+            document.querySelectorAll('.pat-btn').forEach(btn => {
+                const isSel = btn.id === `pat-btn-${id}`;
+                btn.className = `pat-btn p-3.5 rounded-xl border text-left transition ${isSel ? 'bg-emerald-950/50 border-emerald-500 text-white shadow-md' : 'bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-600'}`;
+            });
+
+            updatePatternDisplay();
+            if (wasPlaying) togglePlayPattern();
+        }
+
+        function setPatternChord(root, type, idx) {
+            state.patChordRoot = root;
+            state.patChordType = type;
+            document.querySelectorAll('.patchord-btn').forEach((btn, i) => {
+                btn.className = `patchord-btn px-3 py-1.5 rounded-lg text-xs font-bold border transition ${i === idx ? 'bg-emerald-600 text-white border-emerald-400' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'}`;
+            });
+            updatePatternDisplay();
+        }
+
+        function updatePatBpm(val) {
+            state.patBpm = parseInt(val);
+            document.getElementById('patBpmValue').textContent = `${val} BPM`;
+        }
+
+        function updatePatternDisplay() {
+            const pat = ACCOMPANIMENT_PATTERNS.find(p => p.id === state.patId) || ACCOMPANIMENT_PATTERNS[0];
+            document.getElementById('patTitleDisplay').textContent = pat.name;
+            document.getElementById('patTimeSigBadge').textContent = pat.timeSig;
+            document.getElementById('patDescDisplay').textContent = pat.desc;
+            document.getElementById('patStepNotation').textContent = pat.notation;
+
+            // Render kotak ketukan (Beat Boxes)
+            const beatContainer = document.getElementById('beatBoxesContainer');
+            beatContainer.className = `grid grid-cols-${pat.steps.length} gap-2`;
+            beatContainer.innerHTML = pat.steps.map((s, idx) => `
+                <div id="beat-box-${idx}" class="rounded-xl p-2.5 border border-slate-800 bg-slate-900/90 text-center transition">
+                    <div class="text-base sm:text-lg font-extrabold text-slate-300">${s.label}</div>
+                    <div class="text-[10px] sm:text-xs font-medium text-slate-400 mt-0.5">${s.sub}</div>
+                </div>
+            `).join('');
+
+            // Tampilkan posisi kord LH + RH di piano
+            const lhVoicing = getChordVoicing(state.patChordRoot, state.patChordType, 0, 48); // C3
+            const rhVoicing = getChordVoicing(state.patChordRoot, state.patChordType, 0, 60); // C4
+            const overlay = [
+                ...lhVoicing.midis.map((m, i) => ({ midi: m, finger: [5, 3, 1][i] || '', hand: 'LH' })),
+                ...rhVoicing.midis.map((m, i) => ({ midi: m, finger: [1, 3, 5][i] || '', hand: 'RH' }))
+            ];
+
+            renderPianoOverlay(
+                overlay,
+                `Pola <span class="text-emerald-400 font-bold">${pat.name}</span> pada kord <span class="text-white font-bold">${NOTE_NAMES_SHARP[state.patChordRoot]}${lhVoicing.chordObj.symbol}</span>`
+            );
+        }
+
+        function togglePlayPattern() {
+            if (state.isPlayingPat) {
+                stopAllPlayback();
+                return;
             }
-            return '';
+            stopAllPlayback();
+
+            const pat = ACCOMPANIMENT_PATTERNS.find(p => p.id === state.patId) || ACCOMPANIMENT_PATTERNS[0];
+            state.isPlayingPat = true;
+            document.getElementById('patPlayIcon').className = 'fa-solid fa-stop';
+            document.getElementById('patPlayText').textContent = 'Hentikan Iringan';
+            updateMainPlayButton(true);
+
+            let stepIdx = 0;
+
+            const runStep = () => {
+                if (!state.isPlayingPat) return;
+
+                const lhVoicing = getChordVoicing(state.patChordRoot, state.patChordType, 0, 48);
+                const rhVoicing = getChordVoicing(state.patChordRoot, state.patChordType, 0, 60);
+                const currentStep = pat.steps[stepIdx];
+                const stepMs = (60 / state.patBpm) * 1000;
+
+                // Highlight Beat Box aktif
+                pat.steps.forEach((_, i) => {
+                    const box = document.getElementById(`beat-box-${i}`);
+                    if (box) {
+                        box.className = i === stepIdx
+                            ? 'rounded-xl p-2.5 border border-emerald-400 bg-emerald-950/80 text-center scale-105 shadow-lg shadow-emerald-500/20 transition'
+                            : 'rounded-xl p-2.5 border border-slate-800 bg-slate-900/90 text-center transition';
+                    }
+                });
+
+                const activeOverlay = [];
+                const noteDuration = (stepMs / 1000) * currentStep.dur;
+
+                // Bunyikan nada Tangan Kiri (LH)
+                currentStep.lh.forEach(noteIndex => {
+                    const midi = lhVoicing.midis[noteIndex];
+                    if (midi !== undefined) {
+                        playPianoNote(midi, noteDuration, 0.8);
+                        activeOverlay.push({ midi, finger: [5, 3, 1][noteIndex] || '', hand: 'LH' });
+                    }
+                });
+
+                // Bunyikan nada Tangan Kanan (RH)
+                currentStep.rh.forEach(noteIndex => {
+                    const midi = rhVoicing.midis[noteIndex];
+                    if (midi !== undefined) {
+                        playPianoNote(midi, noteDuration, 0.72);
+                        activeOverlay.push({ midi, finger: [1, 3, 5][noteIndex] || '', hand: 'RH' });
+                    }
+                });
+
+                renderPianoOverlay(
+                    activeOverlay,
+                    `Ketukan <strong>${currentStep.label}</strong> (${currentStep.sub}) • ${pat.name}`
+                );
+
+                stepIdx = (stepIdx + 1) % pat.steps.length;
+                state.patTimer = setTimeout(runStep, stepMs);
+            };
+
+            runStep();
+        }
+
+        /**
+         * 10. NAVIGASI TAB & KONTROL PEMUTAR GLOBAL
+         */
+        function switchTab(tabName) {
+            stopAllPlayback();
+            state.activeTab = tabName;
+
+            // Update styling tombol tab
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                const isSelected = btn.id === `tab-${tabName}`;
+                btn.className = isSelected
+                    ? 'tab-btn active-tab py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                    : 'tab-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/70';
+            });
+
+            // Tampilkan panel yang sesuai
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.add('hidden');
+            });
+            document.getElementById(`panel-${tabName}`).classList.remove('hidden');
+
+            // Sinkronkan tampilan piano dengan tab baru
+            if (tabName === 'chord') updateChordDisplay(false);
+            if (tabName === 'scale') updateScaleDisplay();
+            if (tabName === 'progression') updateProgressionDisplay();
+            if (tabName === 'pattern') updatePatternDisplay();
+        }
+
+        function triggerPrimaryPlay() {
+            if (state.isPlayingScale || state.isPlayingProg || state.isPlayingPat) {
+                stopAllPlayback();
+                return;
+            }
+            if (state.activeTab === 'chord') playCurrentChord('block');
+            if (state.activeTab === 'scale') togglePlayScale();
+            if (state.activeTab === 'progression') togglePlayProgression();
+            if (state.activeTab === 'pattern') togglePlayPattern();
+        }
+
+        function updateMainPlayButton(isPlaying) {
+            const btn = document.getElementById('btnMainPlay');
+            const icon = document.getElementById('mainPlayIcon');
+            const text = document.getElementById('mainPlayText');
+            if (isPlaying) {
+                btn.className = 'px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 active:scale-95 text-white text-xs font-bold shadow-md shadow-rose-600/30 transition flex items-center gap-1.5';
+                icon.className = 'fa-solid fa-stop';
+                text.textContent = 'Stop';
+            } else {
+                btn.className = 'px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-95 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition flex items-center gap-1.5';
+                icon.className = 'fa-solid fa-play';
+                text.textContent = 'Dengarkan';
+            }
+        }
+
+        function stopAllPlayback() {
+            if (state.scaleTimer) clearTimeout(state.scaleTimer);
+            if (state.progTimer) clearTimeout(state.progTimer);
+            if (state.patTimer) clearTimeout(state.patTimer);
+
+            state.isPlayingScale = false;
+            state.isPlayingProg = false;
+            state.isPlayingPat = false;
+
+            // Reset ikon tombol di masing-masing tab
+            const scaleIcon = document.getElementById('scalePlayIcon');
+            if (scaleIcon) {
+                scaleIcon.className = 'fa-solid fa-play';
+                document.getElementById('scalePlayText').textContent = 'Mainkan Naik-Turun';
+            }
+            const progIcon = document.getElementById('progPlayIcon');
+            if (progIcon) {
+                progIcon.className = 'fa-solid fa-play';
+                document.getElementById('progPlayText').textContent = 'Putar Progresi';
+            }
+            const patIcon = document.getElementById('patPlayIcon');
+            if (patIcon) {
+                patIcon.className = 'fa-solid fa-play';
+                document.getElementById('patPlayText').textContent = 'Mulai Iringan';
+            }
+
+            updateMainPlayButton(false);
         }
 
         /**
@@ -1592,18 +1933,6 @@
 
             // Tampilkan C Major di awal
             updateChordDisplay(false);
-
-            // Auto-deteksi diam-diam jika perangkat MIDI sudah terpasang saat halaman dibuka
-            if (navigator.requestMIDIAccess) {
-                navigator.requestMIDIAccess({ sysex: false }).then(access => {
-                    state.midiAccess = access;
-                    access.onstatechange = () => bindMidiInputs();
-                    const connected = Array.from(access.inputs.values()).filter(i => i.state === 'connected');
-                    if (connected.length > 0) {
-                        bindMidiInputs();
-                    }
-                }).catch(() => {});
-            }
         });
     </script>
 </body>
