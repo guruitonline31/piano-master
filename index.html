@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PianoMaster ID - Belajar Kord, Tangga Nada & Iringan Piano</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#151e2e',
+                            925: '#0b101b',
+                            950: '#070a12',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom styling khusus untuk tuts piano & interaksi sentuh mobile */
+        body {
+            background-color: #070a12;
+            color: #f1f5f9;
+            overscroll-behavior-y: contain;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Scrollbar halus */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Piano Keyboard Container */
+        .piano-wrapper {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .piano-keys {
+            position: relative;
+            display: flex;
+            width: 100%;
+            height: 175px;
+            background: #090d16;
+            border-radius: 0 0 12px 12px;
+            padding: 0 4px 6px 4px;
+            box-shadow: inset 0 4px 12px rgba(0,0,0,0.8), 0 10px 25px -5px rgba(0,0,0,0.6);
+        }
+
+        @media (min-width: 640px) {
+            .piano-keys {
+                height: 215px;
+            }
+        }
+
+        /* Tuts Putih */
+        .key-white {
+            position: relative;
+            flex: 1;
+            height: 100%;
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 85%, #e2e8f0 100%);
+            border: 1px solid #94a3b8;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            margin: 0 1px;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 10px;
+            cursor: pointer;
+            transition: transform 0.06s ease, background 0.1s ease, box-shadow 0.1s ease;
+            box-shadow: 0 4px 0 #cbd5e1, 0 5px 8px rgba(0,0,0,0.3);
+        }
+
+        .key-white:active, .key-white.pressed {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #94a3b8, 0 2px 4px rgba(0,0,0,0.4);
+            background: linear-gradient(180deg, #e2e8f0 0%, #f1f5f9 100%);
+        }
+
+        /* Highlight Tuts Putih (Tangan Kanan = Indigo/Violet, Tangan Kiri = Emerald/Teal) */
+        .key-white.active-rh {
+            background: linear-gradient(180deg, #e0e7ff 0%, #c7d2fe 75%, #a5b4fc 100%);
+            border-color: #6366f1;
+            box-shadow: 0 4px 0 #4f46e5, 0 0 15px rgba(99, 102, 241, 0.45);
+        }
+        .key-white.active-lh {
+            background: linear-gradient(180deg, #d1fae5 0%, #a7f3d0 75%, #6ee7b7 100%);
+            border-color: #10b981;
+            box-shadow: 0 4px 0 #059669, 0 0 15px rgba(16, 185, 129, 0.45);
+        }
+        .key-white.playing-now {
+            background: linear-gradient(180deg, #fef08a 0%, #fde047 80%, #eab308 100%) !important;
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #ca8a04, 0 0 20px rgba(250, 204, 21, 0.8) !important;
+        }
+        /* Highlight Tuts MIDI Saat Ditekan & Cocok dengan Target Kord/Scale */
+        .key-white.midi-pressed {
+            background: linear-gradient(180deg, #bae6fd 0%, #7dd3fc 80%, #38bdf8 100%) !important;
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #0284c7, 0 0 18px rgba(56, 189, 248, 0.85) !important;
+        }
+        .key-white.midi-target-hit {
+            background: linear-gradient(180deg, #bbf7d0 0%, #4ade80 80%, #16a34a 100%) !important;
+            border-color: #22c55e !important;
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #15803d, 0 0 24px rgba(34, 197, 94, 0.95) !important;
+        }
+
+        /* Tuts Hitam */
+        .key-black {
+            position: absolute;
+            top: 0;
+            height: 61%;
+            background: linear-gradient(180deg, #334155 0%, #1e293b 20%, #0f172a 90%, #020617 100%);
+            border: 1px solid #020617;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 8px;
+            cursor: pointer;
+            transition: transform 0.06s ease, background 0.1s ease, box-shadow 0.1s ease;
+            box-shadow: 0 4px 0 #020617, 0 6px 10px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.2);
+        }
+
+        .key-black:active, .key-black.pressed {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #020617, 0 2px 4px rgba(0,0,0,0.7);
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        /* Highlight Tuts Hitam */
+        .key-black.active-rh {
+            background: linear-gradient(180deg, #6366f1 0%, #4338ca 85%, #312e81 100%);
+            border-color: #818cf8;
+            box-shadow: 0 4px 0 #1e1b4b, 0 0 15px rgba(99, 102, 241, 0.7);
+        }
+        .key-black.active-lh {
+            background: linear-gradient(180deg, #10b981 0%, #047857 85%, #064e3b 100%);
+            border-color: #34d399;
+            box-shadow: 0 4px 0 #022c22, 0 0 15px rgba(16, 185, 129, 0.7);
+        }
+        .key-black.playing-now {
+            background: linear-gradient(180deg, #facc15 0%, #ca8a04 85%, #854d0e 100%) !important;
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #713f12, 0 0 20px rgba(250, 204, 21, 0.9) !important;
+        }
+        /* Highlight Tuts Hitam MIDI */
+        .key-black.midi-pressed {
+            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 85%, #0369a1 100%) !important;
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #075985, 0 0 18px rgba(56, 189, 248, 0.9) !important;
+        }
+        .key-black.midi-target-hit {
+            background: linear-gradient(180deg, #4ade80 0%, #16a34a 85%, #15803d 100%) !important;
+            border-color: #86efac !important;
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #14532d, 0 0 24px rgba(34, 197, 94, 0.95) !important;
+        }
+
+        /* Badge Nomor Jari (Fingering Circle) */
+        .finger-badge {
+            width: 22px;
+            height: 22px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+            animation: popIn 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @media (min-width: 640px) {
+            .finger-badge {
+                width: 26px;
+                height: 26px;
+                font-size: 12px;
+                margin-bottom: 6px;
+            }
+        }
+
+        .finger-rh {
+            background: #4f46e5;
+            color: #ffffff;
+            border: 2px solid #c7d2fe;
+        }
+        .finger-lh {
+            background: #059669;
+            color: #ffffff;
+            border: 2px solid #a7f3d0;
+        }
+
+        .note-label {
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+            pointer-events: none;
+        }
+        @media (min-width: 640px) {
+            .note-label {
+                font-size: 11px;
+            }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.4); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #6366f1;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            <!-- Kontrol Cepat Piano (MIDI Controller, Toggle Label & Suara) -->
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
+                <button id="btnMidiConnect" onclick="toggleMidiConnection()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5" title="Hubungkan MIDI Controller via USB OTG / Bluetooth">
+                    <span id="midiStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                    <i class="fa-solid fa-plug text-sky-400"></i>
+                    <span id="midiStatusText" class="max-w-[115px] sm:max-w-[180px] truncate">Hubungkan MIDI</span>
+                </button>
+                <button id="btnToggleLabels" onclick="toggleNoteLabels()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5" title="Tampilkan/Sembunyikan Nama Nada">
+                    <i class="fa-solid fa-tag text-indigo-400"></i>
+                    <span class="hidden md:inline">Nada:</span>
+                    <span id="labelStatusText" class="text-indigo-400">ON</span>
+                </button>
+                <button id="btnSoundType" onclick="cycleSoundPreset()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5" title="Ganti Karakter Suara Piano">
+                    <i class="fa-solid fa-sliders text-emerald-400"></i>
+                    <span id="soundPresetText">Grand Warm</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Baris Kontrol MIDI & Detektor Nada Real-time (Muncul saat MIDI aktif atau tombol diklik) -->
+        <div id="midiControlBar" class="hidden bg-slate-950/95 border-t border-slate-800/90">
+            <div class="max-w-5xl mx-auto px-3 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-2 min-w-0">
+                    <span class="px-2 py-0.5 rounded bg-sky-500/15 text-sky-300 border border-sky-500/30 font-bold text-[10px] uppercase shrink-0">MIDI Live</span>
+                    <span id="midiLiveFeedback" class="text-slate-300 font-medium truncate">Tekan tuts pada keyboard MIDI Anda...</span>
+                </div>
+                <div class="flex items-center gap-1.5 ml-auto shrink-0">
+                    <span class="text-[11px] text-slate-400">Oktaf MIDI:</span>
+                    <button onclick="shiftMidiOctave(-1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold border border-slate-700 flex items-center justify-center" title="Turunkan 1 Oktaf">-1</button>
+                    <span id="midiOctaveValue" class="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 font-mono font-bold text-sky-400 text-[11px]">0</span>
+                    <button onclick="shiftMidiOctave(1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold border border-slate-700 flex items-center justify-center" title="Naikkan 1 Oktaf">+1</button>
+                    <button onclick="toggleMidiAutoFold()" id="btnMidiAutoFold" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold text-[11px]" title="Otomatis memetakan oktaf luar (61-key) ke layar C3-B4">Auto-Fit: ON</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STICKY VIRTUAL PIANO SECTION (Selalu terlihat di atas saat memilih kord/scale di bawah) -->
+        <div class="bg-slate-900/95 border-t border-slate-800/80 shadow-2xl">
+            <div class="max-w-5xl mx-auto px-2 sm:px-6 pt-2 pb-2.5">
+                
+                <!-- Baris Info Atas Piano: Keterangan Jari & Tombol Play Utama -->
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
+                    <!-- Legenda Nomor Jari -->
+                    <div class="flex items-center gap-2 sm:gap-3 text-[11px] text-slate-300 overflow-x-auto no-scrollbar">
+                        <span class="font-bold text-slate-400 uppercase tracking-wider text-[10px]">Jari:</span>
+                        <span class="inline-flex items-center gap-1"><strong class="w-4 h-4 rounded-full bg-slate-700 text-white inline-flex items-center justify-center text-[10px]">1</strong> Jempol</span>
+                        <span class="inline-flex items-center gap-1"><strong class="w-4 h-4 rounded-full bg-slate-700 text-white inline-flex items-center justify-center text-[10px]">2</strong> Telunjuk</span>
+                        <span class="inline-flex items-center gap-1"><strong class="w-4 h-4 rounded-full bg-slate-700 text-white inline-flex items-center justify-center text-[10px]">3</strong> Tengah</span>
+                        <span class="inline-flex items-center gap-1"><strong class="w-4 h-4 rounded-full bg-slate-700 text-white inline-flex items-center justify-center text-[10px]">4</strong> Manis</span>
+                        <span class="inline-flex items-center gap-1"><strong class="w-4 h-4 rounded-full bg-slate-700 text-white inline-flex items-center justify-center text-[10px]">5</strong> Kelingking</span>
+                    </div>
+
+                    <!-- Indikator Tangan & Tombol Play Cepat -->
+                    <div class="flex items-center gap-2 ml-auto">
+                        <div class="hidden md:flex items-center gap-2 text-[11px] mr-2">
+                            <span class="flex items-center gap-1 text-indigo-300"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span> T. Kanan (RH)</span>
+                            <span class="flex items-center gap-1 text-emerald-300"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> T. Kiri (LH)</span>
+                        </div>
+
+                        <button id="btnMainPlay" onclick="triggerPrimaryPlay()" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-95 text-white text-xs font-bold shadow-md shadow-indigo-600/30 transition flex items-center gap-1.5">
+                            <i id="mainPlayIcon" class="fa-solid fa-play"></i>
+                            <span id="mainPlayText">Dengarkan</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Container Tuts Piano (2 Oktaf: C3 - B4) -->
+                <div class="piano-wrapper relative rounded-xl overflow-hidden border border-slate-700/80 bg-slate-950">
+                    <!-- Strip Merah Khas Piano Akustik di atas tuts -->
+                    <div class="h-1.5 w-full bg-gradient-to-r from-rose-900 via-red-700 to-rose-900"></div>
+                    <div id="pianoContainer" class="piano-keys">
+                        <!-- Tuts di-generate otomatis oleh JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Status Bar Nada Aktif di Bawah Piano -->
+                <div class="flex items-center justify-between mt-1.5 px-1 text-[11px] text-slate-400">
+                    <div id="activeOverlaySummary" class="font-medium text-slate-300 truncate">
+                        Sentuh tuts piano atau pilih kord di bawah
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="text-[10px] text-slate-500 hidden sm:inline">Rentang: C3 – B4 (2 Oktaf)</span>
+                        <button onclick="clearPianoHighlights()" class="text-slate-400 hover:text-white underline text-[11px]">Reset Tuts</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- KONTEN UTAMA (Navigasi Tab & Panel Pembelajaran) -->
+    <main class="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-6 py-4 pb-16">
+        
+        <!-- Navigasi 4 Tab Utama -->
+        <nav class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800">
+            <button onclick="switchTab('chord')" id="tab-chord" class="tab-btn active-tab py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-lg shadow-indigo-600/20">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>1. Chord Cheat</span>
+            </button>
+            <button onclick="switchTab('scale')" id="tab-scale" class="tab-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/70">
+                <i class="fa-solid fa-stairs"></i>
+                <span>2. Scale Cheat</span>
+            </button>
+            <button onclick="switchTab('progression')" id="tab-progression" class="tab-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/70">
+                <i class="fa-solid fa-forward-step"></i>
+                <span>3. Progresi Kord</span>
+            </button>
+            <button onclick="switchTab('pattern')" id="tab-pattern" class="tab-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 text-slate-400 hover:text-white hover:bg-slate-800/70">
+                <i class="fa-solid fa-drum"></i>
+                <span>4. Pola Iringan</span>
+            </button>
+        </nav>
+
+        <!-- ========================================================= -->
+        <!-- TAB 1: CHORD CHEAT (KAMUS KORD & TATA LETAK JARI)         -->
+        <!-- ========================================================= -->
+        <section id="panel-chord" class="tab-panel space-y-4">
+            <!-- Kartu Info Kord Terpilih -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-850 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <div class="flex items-center gap-2.5">
+                            <h2 id="chordTitleDisplay" class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">C Major</h2>
+                            <span id="chordInversionBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Root Position</span>
+                        </div>
+                        <p id="chordDescDisplay" class="text-xs sm:text-sm text-slate-400 mt-1">Kord dasar paling ceria dan stabil. Fondasi utama musik pop & klasik.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="playCurrentChord('block')" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25">
+                            <i class="fa-solid fa-volume-high"></i> Bunyikan Kord
+                        </button>
+                        <button onclick="playCurrentChord('arpeggio')" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-water"></i> Arpeggio
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Detail Formula, Nada & Nomor Jari -->
+                <div class="grid grid-cols-3 gap-2.5 sm:gap-4 pt-4">
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+                        <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase block">Formula Interval</span>
+                        <span id="chordFormulaDisplay" class="text-sm sm:text-base font-mono font-bold text-indigo-400 mt-0.5 block">1 - 3 - 5</span>
+                    </div>
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+                        <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase block">Susunan Nada</span>
+                        <span id="chordNotesDisplay" class="text-sm sm:text-base font-mono font-bold text-emerald-400 mt-0.5 block">C - E - G</span>
+                    </div>
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+                        <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase block">Jari (<span id="chordHandLabel">Kanan</span>)</span>
+                        <span id="chordFingersDisplay" class="text-sm sm:text-base font-mono font-bold text-amber-400 mt-0.5 block">1 - 3 - 5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kontrol Pemilih Nada Dasar, Tipe Kord, Inversi & Tangan -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <!-- Kolom Kiri: Nada Dasar (Root) -->
+                <div class="md:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 block">
+                        <i class="fa-solid fa-music text-indigo-400 mr-1.5"></i>1. Pilih Nada Dasar (Root)
+                    </label>
+                    <div id="chordRootGrid" class="grid grid-cols-4 gap-2">
+                        <!-- Diisi otomatis via JS -->
+                    </div>
+                </div>
+
+                <!-- Kolom Kanan: Tipe Kord, Inversi & Tangan -->
+                <div class="md:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
+                    <div>
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5 block">
+                            <i class="fa-solid fa-shapes text-indigo-400 mr-1.5"></i>2. Pilih Tipe Kord
+                        </label>
+                        <div id="chordTypeGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                            <!-- Diisi otomatis via JS -->
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-800">
+                        <!-- Pilih Inversi -->
+                        <div>
+                            <label class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 block">
+                                3. Posisi / Inversi
+                            </label>
+                            <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                                <button onclick="setChordInversion(0)" id="inv-btn-0" class="inv-btn py-2 px-2 rounded-lg text-xs font-bold bg-indigo-600 text-white transition">Root</button>
+                                <button onclick="setChordInversion(1)" id="inv-btn-1" class="inv-btn py-2 px-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition">1st Inv</button>
+                                <button onclick="setChordInversion(2)" id="inv-btn-2" class="inv-btn py-2 px-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition">2nd Inv</button>
+                            </div>
+                        </div>
+
+                        <!-- Pilih Tangan -->
+                        <div>
+                            <label class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 block">
+                                4. Penjarian Tangan
+                            </label>
+                            <div class="grid grid-cols-2 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                                <button onclick="setChordHand('RH')" id="chord-hand-RH" class="py-2 px-2 rounded-lg text-xs font-bold bg-indigo-600 text-white transition flex items-center justify-center gap-1.5">
+                                    <i class="fa-regular fa-hand"></i> Kanan (RH)
+                                </button>
+                                <button onclick="setChordHand('LH')" id="chord-hand-LH" class="py-2 px-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+                                    <i class="fa-regular fa-hand fa-flip-horizontal"></i> Kiri (LH)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 2: SCALE CHEAT (TANGGA NADA & FINGERING)              -->
+        <!-- ========================================================= -->
+        <section id="panel-scale" class="tab-panel hidden space-y-4">
+            <!-- Header Info Scale -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-850 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 id="scaleTitleDisplay" class="text-2xl font-extrabold text-white">C Major (Ionian)</h2>
+                        <p id="scaleDescDisplay" class="text-xs sm:text-sm text-slate-400 mt-1">Tangga nada paling dasar tanpa tanda kres (#) atau mol (b). Semua tuts putih.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button id="btnPlayScale" onclick="togglePlayScale()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold transition flex items-center gap-2 shadow-lg shadow-emerald-600/25">
+                            <i id="scalePlayIcon" class="fa-solid fa-play"></i>
+                            <span id="scalePlayText">Mainkan Naik-Turun</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Detail Formula, Nada & Urutan Jari -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+                        <span class="text-[11px] font-semibold text-slate-400 uppercase block">Susunan Nada (1 Oktaf)</span>
+                        <span id="scaleNotesDisplay" class="text-sm font-mono font-bold text-emerald-400 mt-1 block">C - D - E - F - G - A - B - C</span>
+                    </div>
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+                        <span class="text-[11px] font-semibold text-slate-400 uppercase block">Penjarian (<span id="scaleHandLabel">Tangan Kanan</span>)</span>
+                        <span id="scaleFingersDisplay" class="text-sm font-mono font-bold text-amber-400 mt-1 block">1 - 2 - 3 - 1 - 2 - 3 - 4 - 5</span>
+                    </div>
+                    <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3 flex flex-col justify-center">
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-400 mb-1.5">
+                            <span>TEMPO LATIHAN</span>
+                            <span id="scaleBpmValue" class="text-indigo-400 font-mono font-bold">110 BPM</span>
+                        </div>
+                        <input type="range" id="scaleBpmSlider" min="60" max="180" value="110" oninput="updateScaleBpm(this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kontrol Pemilih Nada Dasar, Jenis Scale & Tangan -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div class="md:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
+                    <div>
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5 block">1. Nada Dasar (Root)</label>
+                        <div id="scaleRootGrid" class="grid grid-cols-4 gap-2"></div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800">
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 block">3. Pilih Tangan (Fingering)</label>
+                        <div class="grid grid-cols-2 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                            <button onclick="setScaleHand('RH')" id="scale-hand-RH" class="py-2 px-3 rounded-lg text-xs font-bold bg-indigo-600 text-white transition flex items-center justify-center gap-1.5">
+                                <i class="fa-regular fa-hand"></i> Tangan Kanan
+                            </button>
+                            <button onclick="setScaleHand('LH')" id="scale-hand-LH" class="py-2 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+                                <i class="fa-regular fa-hand fa-flip-horizontal"></i> Tangan Kiri
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5 block">2. Jenis Tangga Nada (Scale)</label>
+                    <div id="scaleTypeGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
+                    <div class="mt-4 p-3 rounded-xl bg-indigo-950/30 border border-indigo-500/20 text-xs text-indigo-200 flex items-start gap-2.5">
+                        <i class="fa-solid fa-lightbulb text-amber-400 mt-0.5"></i>
+                        <p><strong>Tips Penjarian:</strong> Perhatikan perpindahan ibu jari (jari <strong>1</strong>) menyusup di bawah jari tengah (<strong>3</strong>) atau jari manis (<strong>4</strong>) agar permainan tangga nada mulus tanpa terputus.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 3: CHORD PROGRESSION (PROGRESI KORD POPULER)          -->
+        <!-- ========================================================= -->
+        <section id="panel-progression" class="tab-panel hidden space-y-4">
+            <!-- Kontrol Key & Pemutar Progresi -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-850 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 id="progTitleDisplay" class="text-xl sm:text-2xl font-extrabold text-white">Pop 4 Kord Sejuta Umat</h2>
+                        <p id="progDescDisplay" class="text-xs sm:text-sm text-slate-400 mt-0.5">Digunakan di ratusan lagu pop hits dunia dan Indonesia.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="btnPlayProg" onclick="togglePlayProgression()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25">
+                            <i id="progPlayIcon" class="fa-solid fa-play"></i>
+                            <span id="progPlayText">Putar Progresi</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pemilih Nada Dasar (Key) & Tempo -->
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                    <div class="sm:col-span-7">
+                        <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block">Pilih Nada Dasar (Key):</label>
+                        <div id="progKeyGrid" class="flex flex-wrap gap-1.5">
+                            <!-- Tombol Key C, D, E, F, G, A, Bb, dll -->
+                        </div>
+                    </div>
+                    <div class="sm:col-span-5 bg-slate-950/60 border border-slate-800 rounded-xl p-3">
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-400 mb-1.5">
+                            <span>TEMPO PROGRESI</span>
+                            <span id="progBpmValue" class="text-indigo-400 font-mono font-bold">95 BPM</span>
+                        </div>
+                        <input type="range" id="progBpmSlider" min="60" max="150" value="95" oninput="updateProgBpm(this.value)">
+                    </div>
+                </div>
+
+                <!-- Kartu-Kartu Kord dalam Progresi (Interaktif: Klik untuk lihat posisi jari) -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Urutan Kord (Klik kotak kord untuk lihat posisi jari):</span>
+                        <span class="text-[11px] text-indigo-400 font-medium">Bass Kiri + Kord Kanan</span>
+                    </div>
+                    <div id="progChordsContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        <!-- Diisi otomatis via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daftar Preset Progresi Populer -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 block">
+                    <i class="fa-solid fa-fire text-amber-400 mr-1.5"></i>Pilih Preset Progresi Kord Populer
+                </label>
+                <div id="progPresetsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                    <!-- Diisi otomatis via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 4: ACCOMPANIMENT PATTERNS (POLA IRINGAN PIANO)        -->
+        <!-- ========================================================= -->
+        <section id="panel-pattern" class="tab-panel hidden space-y-4">
+            <!-- Visualisasi Ketukan & Pemutar Pola Iringan -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-850 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 id="patTitleDisplay" class="text-xl sm:text-2xl font-extrabold text-white">Pop Ballad (Broken Chord)</h2>
+                            <span id="patTimeSigBadge" class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono text-xs font-bold">4/4</span>
+                        </div>
+                        <p id="patDescDisplay" class="text-xs sm:text-sm text-slate-400 mt-1">Pola arpeggio mengalir yang sangat cocok mengiringi lagu pop melankolis atau ballad.</p>
+                    </div>
+                    <button id="btnPlayPattern" onclick="togglePlayPattern()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25">
+                        <i id="patPlayIcon" class="fa-solid fa-play"></i>
+                        <span id="patPlayText">Mulai Iringan</span>
+                    </button>
+                </div>
+
+                <!-- Indikator Beat / Ketukan Visual Real-Time -->
+                <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5">
+                    <div class="flex items-center justify-between mb-2.5">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Indikator Ketukan & Pembagian Tangan:</span>
+                        <span id="patStepNotation" class="text-xs font-mono font-bold text-amber-400">LH: 1-5-8 | RH: Chord</span>
+                    </div>
+                    <div id="beatBoxesContainer" class="grid grid-cols-4 gap-2">
+                        <!-- Beat boxes di-render dinamis sesuai pola (4 ketukan atau 3 ketukan waltz) -->
+                    </div>
+                </div>
+
+                <!-- Kontrol Kord Contoh & Tempo BPM -->
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                    <div class="sm:col-span-7">
+                        <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block">Kord Latihan Iringan:</label>
+                        <div id="patChordSelectGrid" class="flex flex-wrap gap-1.5">
+                            <!-- Tombol kord latihan: C, Am, F, G, Dm, Em -->
+                        </div>
+                    </div>
+                    <div class="sm:col-span-5 bg-slate-950/60 border border-slate-800 rounded-xl p-3">
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-400 mb-1.5">
+                            <span>TEMPO IRINGAN</span>
+                            <span id="patBpmValue" class="text-emerald-400 font-mono font-bold">88 BPM</span>
+                        </div>
+                        <input type="range" id="patBpmSlider" min="55" max="150" value="88" oninput="updatePatBpm(this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pilihan Pola Iringan -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 block">
+                    <i class="fa-solid fa-sliders text-emerald-400 mr-1.5"></i>Pilih Gaya Pola Iringan (Accompaniment Style)
+                </label>
+                <div id="patternPresetsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                    <!-- Diisi otomatis via JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===================================================================== -->
+    <!-- LOGIKA JAVASCRIPT: AUDIO ENGINE (WEB AUDIO API) & TEORI MUSIK PIANO   -->
+    <!-- ===================================================================== -->
+    <script>
+        /**
+         * 1. KONSTANTA TEORI MUSIK & DATA NADA (C3 - B4 = MIDI 48 - 71)
+         */
+        const NOTE_NAMES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const NOTE_NAMES_DISPLAY = ['C', 'C#/Db', 'D', 'D#/Eb', 'E', 'F', 'F#/Gb', 'G', 'G#/Ab', 'A', 'A#/Bb', 'B'];
+        
+        // Rentang tuts piano: C3 (MIDI 48) sampai B4 (MIDI 71) -> 24 tuts (2 Oktaf penuh)
+        const START_MIDI = 48; // C3
+        const END_MIDI = 71;   // B4
+
+        // Definisi Tipe Kord dengan Interval, Formula & Penjarian Standar (Tangan Kanan & Kiri)
+        const CHORD_TYPES = [
+            {
+                id: 'maj', name: 'Major', symbol: '',
+                intervals: [0, 4, 7], formula: '1 - 3 - 5',
+                desc: 'Kord dasar ceria, terang, dan stabil. Fondasi utama lagu pop & klasik.',
+                fingersRH: [[1, 3, 5], [1, 2, 5], [1, 3, 5]],
+                fingersLH: [[5, 3, 1], [5, 3, 1], [5, 2, 1]]
+            },
+            {
+                id: 'min', name: 'Minor', symbol: 'm',
+                intervals: [0, 3, 7], formula: '1 - b3 - 5',
+                desc: 'Bernuansa sedih, emosional, atau dramatis. Sangat sering dipakai di lagu ballad.',
+                fingersRH: [[1, 3, 5], [1, 2, 5], [1, 3, 5]],
+                fingersLH: [[5, 3, 1], [5, 3, 1], [5, 2, 1]]
+            },
+            {
+                id: 'dom7', name: 'Dominant 7', symbol: '7',
+                intervals: [0, 4, 7, 10], formula: '1 - 3 - 5 - b7',
+                desc: 'Memberi ketegangan (tension) yang ingin kembali ke kord dasar. Khas Blues & Jazz.',
+                fingersRH: [[1, 2, 3, 5], [1, 2, 4, 5], [1, 2, 4, 5]],
+                fingersLH: [[5, 3, 2, 1], [5, 3, 2, 1], [5, 3, 2, 1]]
+            },
+            {
+                id: 'maj7', name: 'Major 7', symbol: 'Maj7',
+                intervals: [0, 4, 7, 11], formula: '1 - 3 - 5 - 7',
+                desc: 'Kord mewah, lembut, romantis, dan dreamy. Populer di R&B, Jazz, & City Pop.',
+                fingersRH: [[1, 2, 3, 5], [1, 2, 4, 5], [1, 2, 4, 5]],
+                fingersLH: [[5, 3, 2, 1], [5, 3, 2, 1], [5, 3, 2, 1]]
+            },
+            {
+                id: 'min7', name: 'Minor 7', symbol: 'm7',
+                intervals: [0, 3, 7, 10], formula: '1 - b3 - 5 - b7',
+                desc: 'Lebih hangat dan santai dibanding minor biasa. Esensial dalam progresi ii - V - I.',
+                fingersRH: [[1, 2, 3, 5], [1, 2, 4, 5], [1, 2, 4, 5]],
+                fingersLH: [[5, 3, 2, 1], [5, 3, 2, 1], [5, 3, 2, 1]]
+            },
+            {
+                id: 'sus2', name: 'Sus2', symbol: 'sus2',
+                intervals: [0, 2, 7], formula: '1 - 2 - 5',
+                desc: 'Mengganti nada ke-3 dengan nada ke-2. Terdengar terbuka, modern, dan mengambang.',
+                fingersRH: [[1, 2, 5], [1, 3, 5], [1, 3, 5]],
+                fingersLH: [[5, 4, 1], [5, 3, 1], [5, 2, 1]]
+            },
+            {
+                id: 'sus4', name: 'Sus4', symbol: 'sus4',
+                intervals: [0, 5, 7], formula: '1 - 4 - 5',
+                desc: 'Menahan resolusi sebelum kembali ke kord Major/Minor. Sering jadi variasi akhir kalimat.',
+                fingersRH: [[1, 4, 5], [1, 2, 5], [1, 3, 5]],
+                fingersLH: [[5, 2, 1], [5, 3, 1], [5, 2, 1]]
+            },
+            {
+                id: 'dim', name: 'Diminished', symbol: 'dim',
+                intervals: [0, 3, 6], formula: '1 - b3 - b5',
+                desc: 'Nuansa tegang, misterius, dan gelap. Sering dipakai sebagai kord jembatan (passing chord).',
+                fingersRH: [[1, 3, 5], [1, 2, 5], [1, 3, 5]],
+                fingersLH: [[5, 3, 1], [5, 3, 1], [5, 2, 1]]
+            },
+            {
+                id: 'aug', name: 'Augmented', symbol: 'aug',
+                intervals: [0, 4, 8], formula: '1 - 3 - #5',
+                desc: 'Nuansa dramatis dan menggantung. Efektif untuk transisi naik ke kord berikutnya.',
+                fingersRH: [[1, 3, 5], [1, 2, 5], [1, 3, 5]],
+                fingersLH: [[5, 3, 1], [5, 3, 1], [5, 2, 1]]
+            },
+            {
+                id: 'add9', name: 'Add9', symbol: 'add9',
+                intervals: [0, 4, 7, 14], formula: '1 - 3 - 5 - 9',
+                desc: 'Kord Major dengan tambahan nada ke-9 (oktaf + 2). Sangat manis untuk lagu pop modern.',
+                fingersRH: [[1, 2, 3, 5], [1, 2, 3, 5], [1, 2, 4, 5]],
+                fingersLH: [[5, 3, 2, 1], [5, 3, 2, 1], [5, 3, 2, 1]]
+            }
+        ];
+
+        // Definisi Tangga Nada (Scales) & Penjarian
+        const SCALE_TYPES = [
+            {
+                id: 'major', name: 'Major (Ionian)',
+                intervals: [0, 2, 4, 5, 7, 9, 11, 12],
+                fingersRH: [1, 2, 3, 1, 2, 3, 4, 5],
+                fingersLH: [5, 4, 3, 2, 1, 3, 2, 1],
+                desc: 'Tangga nada standar paling umum. Bernuansa ceria, optimis, dan harmonis.'
+            },
+            {
+                id: 'nat_minor', name: 'Natural Minor',
+                intervals: [0, 2, 3, 5, 7, 8, 10, 12],
+                fingersRH: [1, 2, 3, 1, 2, 3, 4, 5],
+                fingersLH: [5, 4, 3, 2, 1, 3, 2, 1],
+                desc: 'Tangga nada minor alami dengan nuansa sedih, lembut, dan melankolis.'
+            },
+            {
+                id: 'harm_minor', name: 'Harmonic Minor',
+                intervals: [0, 2, 3, 5, 7, 8, 11, 12],
+                fingersRH: [1, 2, 3, 1, 2, 3, 4, 5],
+                fingersLH: [5, 4, 3, 2, 1, 3, 2, 1],
+                desc: 'Minor alami dengan nada ke-7 dinaikkan setengah. Nuansa klasik & Timur Tengah.'
+            },
+            {
+                id: 'mel_minor', name: 'Melodic Minor',
+                intervals: [0, 2, 3, 5, 7, 9, 11, 12],
+                fingersRH: [1, 2, 3, 1, 2, 3, 4, 5],
+                fingersLH: [5, 4, 3, 2, 1, 3, 2, 1],
+                desc: 'Nada ke-6 dan ke-7 dinaikkan setengah. Sangat populer untuk improvisasi Jazz.'
+            },
+            {
+                id: 'maj_penta', name: 'Major Pentatonic',
+                intervals: [0, 2, 4, 7, 9, 12],
+                fingersRH: [1, 2, 3, 1, 2, 3],
+                fingersLH: [5, 4, 3, 2, 1, 2],
+                desc: 'Tangga nada 5 nada yang cerah dan bebas nada sumbang. Cocok untuk melodi pop & country.'
+            },
+            {
+                id: 'min_penta', name: 'Minor Pentatonic',
+                intervals: [0, 3, 5, 7, 10, 12],
+                fingersRH: [1, 2, 3, 1, 2, 3],
+                fingersLH: [5, 4, 3, 2, 1, 2],
+                desc: 'Tangga nada favorit untuk solo pop, rock, dan R&B. Mudah dihafal dan ekspresif.'
+            },
+            {
+                id: 'blues', name: 'Blues Scale',
+                intervals: [0, 3, 5, 6, 7, 10, 12],
+                fingersRH: [1, 2, 3, 4, 1, 2, 3],
+                fingersLH: [5, 4, 3, 2, 1, 3, 2],
+                desc: 'Minor Pentatonic ditambah "Blue Note" (b5). Menghasilkan karakter blues & soul yang kental.'
+            },
+            {
+                id: 'dorian', name: 'Dorian Mode',
+                intervals: [0, 2, 3, 5, 7, 9, 10, 12],
+                fingersRH: [1, 2, 3, 1, 2, 3, 4, 5],
+                fingersLH: [5, 4, 3, 2, 1, 3, 2, 1],
+                desc: 'Mode minor yang lebih groovy dan cerah berkat nada ke-6 mayor. Khas Funk, Soul & Santana.'
+            },
+            {
+                id: 'mixolydian', name: 'Mixolydian Mode',
+                intervals: [0, 2, 4, 5, 7, 9, 10, 12],
+                fingersRH: [1, 2, 3, 1, 2, 3, 4, 5],
+                fingersLH: [5, 4, 3, 2, 1, 3, 2, 1],
+                desc: 'Tangga nada mayor dengan nada ke-7 datar (b7). Nuansa rock klasik & dominant blues.'
+            }
+        ];
+
+        // Preset Progresi Kord Populer (Menggunakan derajat skala mayor: 0=I, 2=ii, 4=iii, 5=IV, 7=V, 9=vi)
+        const PROGRESSION_PRESETS = [
+            {
+                id: 'pop4', name: 'Pop 4 Kord Sejuta Umat',
+                roman: 'I - V - vi - IV',
+                desc: 'Progresi paling ikonik sepanjang masa. Dipakai di ratusan lagu pop hits.',
+                steps: [
+                    { roman: 'I', semitone: 0, type: 'maj' },
+                    { roman: 'V', semitone: 7, type: 'maj' },
+                    { roman: 'vi', semitone: 9, type: 'min' },
+                    { roman: 'IV', semitone: 5, type: 'maj' }
+                ]
+            },
+            {
+                id: 'galau', name: 'Ballad / Galau Indonesia',
+                roman: 'I - iii - IV - V',
+                desc: 'Nuansa romantis dan menyentuh hati. Sangat sering muncul di lagu pop Indonesia.',
+                steps: [
+                    { roman: 'I', semitone: 0, type: 'maj' },
+                    { roman: 'iii', semitone: 4, type: 'min' },
+                    { roman: 'IV', semitone: 5, type: 'maj' },
+                    { roman: 'V', semitone: 7, type: 'maj' }
+                ]
+            },
+            {
+                id: 'rnb', name: 'R&B / Emotional Minor Start',
+                roman: 'vi - IV - I - V',
+                desc: 'Dimulai dari kord minor (vi) untuk membangun emosi mendalam sebelum naik ke mayor.',
+                steps: [
+                    { roman: 'vi', semitone: 9, type: 'min' },
+                    { roman: 'IV', semitone: 5, type: 'maj' },
+                    { roman: 'I', semitone: 0, type: 'maj' },
+                    { roman: 'V', semitone: 7, type: 'maj' }
+                ]
+            },
+            {
+                id: 'jazz', name: 'Jazz Turnaround (ii - V - I - vi)',
+                roman: 'ii7 - V7 - IMaj7 - vi7',
+                desc: 'Progresi standar emas musik Jazz, Bossa Nova, dan Neo-Soul yang halus.',
+                steps: [
+                    { roman: 'ii7', semitone: 2, type: 'min7' },
+                    { roman: 'V7', semitone: 7, type: 'dom7' },
+                    { roman: 'IMaj7', semitone: 0, type: 'maj7' },
+                    { roman: 'vi7', semitone: 9, type: 'min7' }
+                ]
+            },
+            {
+                id: 'canon', name: 'Pop Klasik / Canon Style',
+                roman: 'I - V - vi - iii - IV - I - IV - V',
+                desc: 'Terinspirasi dari Pachelbel Canon in D. Megah, mengalir, dan timeless.',
+                steps: [
+                    { roman: 'I', semitone: 0, type: 'maj' },
+                    { roman: 'V', semitone: 7, type: 'maj' },
+                    { roman: 'vi', semitone: 9, type: 'min' },
+                    { roman: 'iii', semitone: 4, type: 'min' },
+                    { roman: 'IV', semitone: 5, type: 'maj' },
+                    { roman: 'I', semitone: 0, type: 'maj' },
+                    { roman: 'IV', semitone: 5, type: 'maj' },
+                    { roman: 'V', semitone: 7, type: 'maj' }
+                ]
+            },
+            {
+                id: 'blues', name: 'Blues 12-Bar (4 Bar Inti)',
+                roman: 'I7 - IV7 - I7 - V7',
+                desc: 'Esensi kord dominant 7 khas musik Blues dan Rock n Roll.',
+                steps: [
+                    { roman: 'I7', semitone: 0, type: 'dom7' },
+                    { roman: 'IV7', semitone: 5, type: 'dom7' },
+                    { roman: 'I7', semitone: 0, type: 'dom7' },
+                    { roman: 'V7', semitone: 7, type: 'dom7' }
+                ]
+            }
+        ];
+
+        // Definisi Pola Iringan (Accompaniment Patterns)
+        const ACCOMPANIMENT_PATTERNS = [
+            {
+                id: 'block', name: 'Block Chords (Ketukan 1-2-3-4)',
+                timeSig: '4/4',
+                notation: 'LH: Bass (1) | RH: Kord Penuh (1-2-3-4)',
+                desc: 'Tangan kiri menahan nada bass di ketukan 1, tangan kanan menekan kord penuh setiap ketukan.',
+                steps: [
+                    { label: '1', sub: 'Bass + Kord', lh: [0], rh: [0, 1, 2], dur: 0.9 },
+                    { label: '2', sub: 'Kord', lh: [], rh: [0, 1, 2], dur: 0.9 },
+                    { label: '3', sub: 'Kord', lh: [], rh: [0, 1, 2], dur: 0.9 },
+                    { label: '4', sub: 'Kord', lh: [], rh: [0, 1, 2], dur: 0.9 }
+                ]
+            },
+            {
+                id: 'ballad', name: 'Pop Ballad (Broken Chord)',
+                timeSig: '4/4',
+                notation: 'LH: 1 - 5 | RH: 3 - 5 - 3',
+                desc: 'Pola arpeggio bergantian antara tangan kiri dan kanan. Sangat lembut untuk lagu sedih/romantis.',
+                steps: [
+                    { label: '1', sub: 'LH Root', lh: [0], rh: [], dur: 0.95 },
+                    { label: '2', sub: 'LH 5th', lh: [2], rh: [], dur: 0.95 },
+                    { label: '3', sub: 'RH 3+5', lh: [], rh: [1, 2], dur: 0.95 },
+                    { label: '4', sub: 'RH Root', lh: [], rh: [0], dur: 0.95 }
+                ]
+            },
+            {
+                id: 'alberti', name: 'Alberti Bass (Klasik)',
+                timeSig: '4/4',
+                notation: 'LH: 1 - 5 - 3 - 5 | RH: Tahan Kord',
+                desc: 'Pola iringan klasik era Mozart/Beethoven: nada terendah, tertinggi, tengah, tertinggi.',
+                steps: [
+                    { label: '1', sub: 'Bawah (1)', lh: [0], rh: [0, 1, 2], dur: 0.9 },
+                    { label: '2', sub: 'Atas (5)', lh: [2], rh: [], dur: 0.9 },
+                    { label: '3', sub: 'Tengah (3)', lh: [1], rh: [], dur: 0.9 },
+                    { label: '4', sub: 'Atas (5)', lh: [2], rh: [], dur: 0.9 }
+                ]
+            },
+            {
+                id: 'pop_sync', name: 'Pop Modern Syncopated',
+                timeSig: '4/4',
+                notation: 'LH: Bass (1 & 3) | RH: Ritmis Pop',
+                desc: 'Iringan pop upbeat modern dengan aksen ketukan yang hidup dan enerjik.',
+                steps: [
+                    { label: '1', sub: 'Bass + Kord', lh: [0], rh: [0, 1, 2], dur: 0.85 },
+                    { label: '2', sub: 'RH Kord', lh: [], rh: [0, 1, 2], dur: 0.7 },
+                    { label: '3', sub: 'LH Bass', lh: [0], rh: [], dur: 0.85 },
+                    { label: '4', sub: 'RH Aksentuasi', lh: [2], rh: [0, 1, 2], dur: 0.85 }
+                ]
+            },
+            {
+                id: 'waltz', name: 'Waltz (3/4 Klasik & Romantis)',
+                timeSig: '3/4',
+                notation: 'LH: Bass (1) | RH: Kord (2) - Kord (3)',
+                desc: 'Birama 3/4 khas dansa waltz: "DUM - cak - cak". Anggun dan mengalir.',
+                steps: [
+                    { label: '1', sub: 'DUM (Bass)', lh: [0], rh: [], dur: 0.95 },
+                    { label: '2', sub: 'cak (Kord)', lh: [], rh: [0, 1, 2], dur: 0.8 },
+                    { label: '3', sub: 'cak (Kord)', lh: [], rh: [0, 1, 2], dur: 0.8 }
+                ]
+            },
+            {
+                id: 'bossa', name: 'Bossa Nova / Latin Groove',
+                timeSig: '4/4',
+                notation: 'LH: 1 - 5 Sync | RH: Staccato Jazz',
+                desc: 'Groove santai ala kafe dengan sinkopasi bass dan kord pendek yang manis.',
+                steps: [
+                    { label: '1', sub: 'Bass + Kord', lh: [0], rh: [0, 1, 2], dur: 0.75 },
+                    { label: '2', sub: 'RH Sync', lh: [], rh: [0, 1, 2], dur: 0.55 },
+                    { label: '3', sub: 'LH 5th', lh: [2], rh: [], dur: 0.8 },
+                    { label: '4', sub: 'RH Jawab', lh: [], rh: [0, 1, 2], dur: 0.65 }
+                ]
+            }
+        ];
+
+        /**
+         * 2. STATE APLIKASI GLOBAL
+         */
+        const state = {
+            activeTab: 'chord',
+            showLabels: true,
+            soundPresetIndex: 0,
+            soundPresets: ['Grand Warm', 'Electric EP', 'Soft Felt'],
+            
+            // State Tab 1: Chord Cheat
+            chordRoot: 0,        // 0 = C
+            chordType: 'maj',
+            chordInversion: 0,   // 0 = Root, 1 = 1st Inv, 2 = 2nd Inv
+            chordHand: 'RH',     // 'RH' atau 'LH'
+
+            // State Tab 2: Scale Cheat
+            scaleRoot: 0,
+            scaleType: 'major',
+            scaleHand: 'RH',
+            scaleBpm: 110,
+            isPlayingScale: false,
+            scaleTimer: null,
+
+            // State Tab 3: Chord Progression
+            progKey: 0,          // 0 = C Major
+            progPresetId: 'pop4',
+            progBpm: 95,
+            isPlayingProg: false,
+            progTimer: null,
+            activeProgStep: -1,
+
+            // State Tab 4: Accompaniment Patterns
+            patId: 'ballad',
+            patChordRoot: 0,     // 0 = C
+            patChordType: 'maj',
+            patBpm: 88,
+            isPlayingPat: false,
+            patTimer: null,
+            activePatStep: -1,
+
+            // State Web MIDI API (USB OTG / Bluetooth MIDI)
+            midiAccess: null,
+            midiConnected: false,
+            midiDeviceName: '',
+            midiOctaveShift: 0,      // -2, -1, 0, +1, +2
+            midiAutoFitScreen: true, // Otomatis lipat nada luar C3-B4 ke visual layar
+            activeMidiNotes: new Map(), // key: rawMidi, value: { mappedMidi, pitchClass, velocity }
+            targetPitchClasses: new Set() // Pitch class target dari Chord/Scale aktif
+        };
+
+        /**
+         * 3. WEB AUDIO API - SINTESIS SUARA PIANO REALISTIS
+         */
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContextClass();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function midiToFreq(midi) {
+            return 440 * Math.pow(2, (midi - 69) / 12);
+        }
+
+        /**
+         * Memainkan satu not piano dengan sintesis multi-harmonik + filter + ADSR
+         */
+        function playPianoNote(midi, duration = 1.2, velocity = 0.75) {
+            try {
+                initAudio();
+                const now = audioCtx.currentTime;
+                const freq = midiToFreq(midi);
+                const preset = state.soundPresets[state.soundPresetIndex];
+
+                // Master Gain untuk not ini
+                const noteGain = audioCtx.createGain();
+                const filter = audioCtx.createBiquadFilter();
+
+                // Konfigurasi filter & harmonik sesuai karakter suara
+                filter.type = 'lowpass';
+                if (preset === 'Grand Warm') {
+                    filter.frequency.setValueAtTime(freq * 6, now);
+                    filter.frequency.exponentialRampToValueAtTime(freq * 1.5, now + duration);
+                } else if (preset === 'Electric EP') {
+                    filter.frequency.setValueAtTime(freq * 4.5, now);
+                    filter.frequency.exponentialRampToValueAtTime(freq * 1.2, now + duration);
+                } else { // Soft Felt
+                    filter.frequency.setValueAtTime(freq * 2.8, now);
+                    filter.frequency.exponentialRampToValueAtTime(freq * 1.0, now + duration);
+                }
+
+                // Envelope ADSR Piano
+                const peakGain = 0.24 * velocity;
+                noteGain.gain.setValueAtTime(0.0001, now);
+                noteGain.gain.linearRampToValueAtTime(peakGain, now + 0.012); // Attack cepat seperti palu piano
+                noteGain.gain.exponentialRampToValueAtTime(peakGain * 0.45, now + 0.25); // Decay awal
+                noteGain.gain.exponentialRampToValueAtTime(0.0001, now + duration + 0.35); // Release panjang
+
+                // Osilator Utama (Fundamental)
+                const osc1 = audioCtx.createOscillator();
+                osc1.type = preset === 'Electric EP' ? 'sine' : 'triangle';
+                osc1.frequency.setValueAtTime(freq, now);
+
+                // Osilator Harmonik ke-2 (Octave / Overtone hangat)
+                const osc2 = audioCtx.createOscillator();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(freq * 2, now);
+                const osc2Gain = audioCtx.createGain();
+                osc2Gain.gain.setValueAtTime(preset === 'Electric EP' ? 0.35 : 0.22, now);
+
+                // Osilator Harmonik ke-3 (Sparkle / Tine)
+                const osc3 = audioCtx.createOscillator();
+                osc3.type = 'sine';
+                osc3.frequency.setValueAtTime(freq * 3, now);
+                const osc3Gain = audioCtx.createGain();
+                osc3Gain.gain.setValueAtTime(preset === 'Soft Felt' ? 0.03 : 0.08, now);
+
+                // Routing Audio
+                osc1.connect(filter);
+                osc2.connect(osc2Gain);
+                osc2Gain.connect(filter);
+                osc3.connect(osc3Gain);
+                osc3Gain.connect(filter);
+
+                filter.connect(noteGain);
+                noteGain.connect(audioCtx.destination);
+
+                // Mulai & Hentikan
+                osc1.start(now);
+                osc2.start(now);
+                osc3.start(now);
+
+                const stopTime = now + duration + 0.4;
+                osc1.stop(stopTime);
+                osc2.stop(stopTime);
+                osc3.stop(stopTime);
+
+                // Visual flash pada tuts piano
+                flashKeyVisual(midi, Math.min(duration * 600, 450));
+            } catch (e) {
+                console.error("Audio error:", e);
+            }
+        }
+
+        // Map untuk menyimpan suara sustain saat tuts MIDI fisik ditekan lama
+        const sustainedMidiVoices = new Map();
+
+        /**
+         * Memulai suara not sustain khusus untuk MIDI Note On (berhenti saat Note Off)
+         */
+        function startSustainedMidiNote(rawMidi, playMidi, velocity = 0.8) {
+            try {
+                initAudio();
+                stopSustainedMidiNote(rawMidi);
+
+                const now = audioCtx.currentTime;
+                const freq = midiToFreq(playMidi);
+                const preset = state.soundPresets[state.soundPresetIndex];
+
+                const noteGain = audioCtx.createGain();
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+
+                const velCurve = Math.max(0.15, Math.min(1.0, velocity));
+                if (preset === 'Grand Warm') {
+                    filter.frequency.setValueAtTime(freq * (3.5 + velCurve * 3.5), now);
+                    filter.frequency.exponentialRampToValueAtTime(freq * 1.4, now + 2.5);
+                } else if (preset === 'Electric EP') {
+                    filter.frequency.setValueAtTime(freq * (3 + velCurve * 2.5), now);
+                    filter.frequency.exponentialRampToValueAtTime(freq * 1.1, now + 2.5);
+                } else {
+                    filter.frequency.setValueAtTime(freq * (2 + velCurve * 1.5), now);
+                    filter.frequency.exponentialRampToValueAtTime(freq * 0.95, now + 2.5);
+                }
+
+                const peakGain = 0.26 * velCurve;
+                noteGain.gain.setValueAtTime(0.0001, now);
+                noteGain.gain.linearRampToValueAtTime(peakGain, now + 0.01);
+                noteGain.gain.exponentialRampToValueAtTime(peakGain * 0.52, now + 0.35);
+                noteGain.gain.exponentialRampToValueAtTime(peakGain * 0.25, now + 3.5);
+
+                const osc1 = audioCtx.createOscillator();
+                osc1.type = preset === 'Electric EP' ? 'sine' : 'triangle';
+                osc1.frequency.setValueAtTime(freq, now);
+
+                const osc2 = audioCtx.createOscillator();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(freq * 2, now);
+                const osc2Gain = audioCtx.createGain();
+                osc2Gain.gain.setValueAtTime(preset === 'Electric EP' ? 0.35 : 0.22, now);
+
+                const osc3 = audioCtx.createOscillator();
+                osc3.type = 'sine';
+                osc3.frequency.setValueAtTime(freq * 3, now);
+                const osc3Gain = audioCtx.createGain();
+                osc3Gain.gain.setValueAtTime(preset === 'Soft Felt' ? 0.03 : 0.08 * velCurve, now);
+
+                osc1.connect(filter);
+                osc2.connect(osc2Gain);
+                osc2Gain.connect(filter);
+                osc3.connect(osc3Gain);
+                osc3Gain.connect(filter);
+
+                filter.connect(noteGain);
+                noteGain.connect(audioCtx.destination);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc3.start(now);
+
+                sustainedMidiVoices.set(rawMidi, { noteGain, osc1, osc2, osc3 });
+            } catch (e) {
+                console.error("MIDI Audio start error:", e);
+            }
+        }
+
+        function stopSustainedMidiNote(rawMidi) {
+            const voice = sustainedMidiVoices.get(rawMidi);
+            if (!voice || !audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                voice.noteGain.gain.cancelScheduledValues(now);
+                voice.noteGain.gain.setValueAtTime(Math.max(voice.noteGain.gain.value, 0.001), now);
+                voice.noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+                const stopTime = now + 0.25;
+                voice.osc1.stop(stopTime);
+                voice.osc2.stop(stopTime);
+                voice.osc3.stop(stopTime);
+            } catch (e) {
+                // Abaikan jika osilator sudah berhenti
+            }
+            sustainedMidiVoices.delete(rawMidi);
+        }
+
+        function flashKeyVisual(midi, ms = 250) {
+            const keyEl = document.querySelector(`[data-midi="${midi}"]`);
+            if (!keyEl) return;
+            keyEl.classList.add('playing-now');
+            setTimeout(() => {
+                keyEl.classList.remove('playing-now');
+            }, ms);
+        }
+
+        /**
+         * 4. RENDER & INTERAKSI VIRTUAL PIANO (C3 - B4)
+         */
+        function buildPianoKeyboard() {
+            const container = document.getElementById('pianoContainer');
+            container.innerHTML = '';
+
+            // Hitung jumlah tuts putih terlebih dahulu untuk posisi tuts hitam presisi (%)
+            const whiteNotes = [];
+            for (let m = START_MIDI; m <= END_MIDI; m++) {
+                const pitch = m % 12;
+                const isBlack = [1, 3, 6, 8, 10].includes(pitch);
+                if (!isBlack) {
+                    whiteNotes.push(m);
+                }
+            }
+
+            const totalWhite = whiteNotes.length; // 14 tuts putih (2 oktaf)
+            const whiteWidthPercent = 100 / totalWhite;
+            const blackWidthPercent = whiteWidthPercent * 0.62;
+
+            // Render Tuts Putih
+            whiteNotes.forEach((midi, idx) => {
+                const pitch = midi % 12;
+                const octave = Math.floor(midi / 12) - 1;
+                const noteName = NOTE_NAMES_SHARP[pitch];
+
+                const keyDiv = document.createElement('div');
+                keyDiv.className = 'key-white';
+                keyDiv.dataset.midi = midi;
+                keyDiv.dataset.note = noteName;
+
+                keyDiv.innerHTML = `
+                    <div class="finger-slot"></div>
+                    <span class="note-label text-slate-500">${noteName}${noteName === 'C' ? octave : ''}</span>
+                `;
+
+                attachKeyEvents(keyDiv, midi);
+                container.appendChild(keyDiv);
+            });
+
+            // Render Tuts Hitam di atas tuts putih
+            let whiteIndexCounter = 0;
+            for (let m = START_MIDI; m <= END_MIDI; m++) {
+                const pitch = m % 12;
+                const isBlack = [1, 3, 6, 8, 10].includes(pitch);
+
+                if (!isBlack) {
+                    whiteIndexCounter++;
+                } else {
+                    const noteName = NOTE_NAMES_SHARP[pitch];
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'key-black';
+                    keyDiv.dataset.midi = m;
+                    keyDiv.dataset.note = noteName;
+
+                    // Posisi left tepat di perbatasan tuts putih sebelumnya
+                    const leftPercent = (whiteIndexCounter * whiteWidthPercent) - (blackWidthPercent / 2);
+                    keyDiv.style.left = `${leftPercent}%`;
+                    keyDiv.style.width = `${blackWidthPercent}%`;
+
+                    keyDiv.innerHTML = `
+                        <div class="finger-slot"></div>
+                        <span class="note-label text-slate-300 text-[9px]">${noteName}</span>
+                    `;
+
+                    attachKeyEvents(keyDiv, m);
+                    container.appendChild(keyDiv);
+                }
+            }
+
+            updateLabelVisibility();
+        }
+
+        function attachKeyEvents(el, midi) {
+            // Mendukung multi-touch di layar HP dan klik mouse
+            const triggerDown = (e) => {
+                e.preventDefault();
+                el.classList.add('pressed');
+                playPianoNote(midi, 1.3, 0.8);
+            };
+            const triggerUp = () => {
+                el.classList.remove('pressed');
+            };
+
+            el.addEventListener('mousedown', triggerDown);
+            el.addEventListener('mouseup', triggerUp);
+            el.addEventListener('mouseleave', triggerUp);
+
+            el.addEventListener('touchstart', triggerDown, { passive: false });
+            el.addEventListener('touchend', triggerUp);
+            el.addEventListener('touchcancel', triggerUp);
+        }
+
+        /**
+         * Menampilkan highlight tuts + nomor jari pada Virtual Piano
+         * @param {Array} notesData - Array objek { midi, finger, hand: 'RH' | 'LH' }
+         * @param {String} summaryText - Teks status di bawah piano
+         */
+        function renderPianoOverlay(notesData, summaryText = '') {
+            // Simpan pitch class target dari materi aktif (untuk pencocokan latihan MIDI)
+            state.targetPitchClasses = new Set(notesData.map(item => ((item.midi % 12) + 12) % 12));
+
+            // Bersihkan highlight sebelumnya
+            document.querySelectorAll('.key-white, .key-black').forEach(el => {
+                el.classList.remove('active-rh', 'active-lh');
+                const slot = el.querySelector('.finger-slot');
+                if (slot) slot.innerHTML = '';
+            });
+
+            notesData.forEach(item => {
+                // Pastikan midi berada dalam rentang keyboard C3 - B4 (48 - 71)
+                let targetMidi = item.midi;
+                while (targetMidi < START_MIDI) targetMidi += 12;
+                while (targetMidi > END_MIDI) targetMidi -= 12;
+
+                const keyEl = document.querySelector(`[data-midi="${targetMidi}"]`);
+                if (keyEl) {
+                    const handClass = item.hand === 'LH' ? 'active-lh' : 'active-rh';
+                    const badgeClass = item.hand === 'LH' ? 'finger-lh' : 'finger-rh';
+                    keyEl.classList.add(handClass);
+
+                    if (item.finger) {
+                        const slot = keyEl.querySelector('.finger-slot');
+                        if (slot) {
+                            slot.innerHTML = `<div class="finger-badge ${badgeClass}">${item.finger}</div>`;
+                        }
+                    }
+                }
+            });
+
+            if (summaryText) {
+                document.getElementById('activeOverlaySummary').innerHTML = summaryText;
+            }
+            refreshMidiKeyVisuals();
+        }
+
+        function clearPianoHighlights() {
+            stopAllPlayback();
+            state.activeMidiNotes.clear();
+            refreshMidiKeyVisuals();
+            renderPianoOverlay([], 'Semua highlight direset. Sentuh tuts untuk bermain bebas.');
+        }
+
+        /**
+         * ===================================================================
+         * 10B. WEB MIDI API ENGINE (USB OTG ANDROID / BLUETOOTH / DESKTOP)
+         * ===================================================================
+         */
+        async function toggleMidiConnection() {
+            const bar = document.getElementById('midiControlBar');
+            bar.classList.remove('hidden');
+
+            if (!navigator.requestMIDIAccess) {
+                showMidiBannerMessage(
+                    `<span class="text-amber-400 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Browser Tidak Mendukung Web MIDI:</span> Gunakan <strong>Google Chrome</strong> di HP Android (dengan kabel USB OTG) atau Chrome/Edge di PC. Safari iOS belum mendukung Web MIDI.`,
+                    'unsupported'
+                );
+                return;
+            }
+
+            try {
+                if (!state.midiAccess) {
+                    state.midiAccess = await navigator.requestMIDIAccess({ sysex: false });
+                    // Auto-detect hot-plugging saat kabel USB OTG dipasang/dicabut
+                    state.midiAccess.onstatechange = (event) => {
+                        bindMidiInputs();
+                    };
+                }
+                bindMidiInputs();
+            } catch (err) {
+                console.error('Web MIDI Error:', err);
+                showMidiBannerMessage(
+                    `<span class="text-rose-400 font-bold">Gagal Mengakses MIDI:</span> Pastikan izin perangkat MIDI diizinkan dan kabel OTG terpasang.`,
+                    'error'
+                );
+            }
+        }
+
+        function bindMidiInputs() {
+            if (!state.midiAccess) return;
+            const inputs = Array.from(state.midiAccess.inputs.values());
+            const connectedInputs = inputs.filter(inp => inp.state === 'connected');
+
+            if (connectedInputs.length > 0) {
+                state.midiConnected = true;
+                state.midiDeviceName = connectedInputs[0].name || 'MIDI Keyboard';
+
+                connectedInputs.forEach(input => {
+                    input.onmidimessage = handleMidiMessage;
+                });
+
+                updateMidiHeaderUI(true, state.midiDeviceName);
+                showMidiBannerMessage(
+                    `<span class="text-emerald-400 font-bold">Terhubung ke ${state.midiDeviceName}</span> — Mainkan tuts fisik untuk bunyi & latihan interaktif!`,
+                    'connected'
+                );
+            } else {
+                state.midiConnected = false;
+                state.midiDeviceName = '';
+                state.activeMidiNotes.clear();
+                refreshMidiKeyVisuals();
+                updateMidiHeaderUI(false, '');
+                showMidiBannerMessage(
+                    `<span class="text-amber-300 font-semibold">Menunggu Perangkat MIDI...</span> Colokkan kabel USB OTG ke keyboard MIDI (misal Rixton 61-key) atau sambungkan Bluetooth MIDI.`,
+                    'waiting'
+                );
+            }
+        }
+
+        function updateMidiHeaderUI(isConnected, deviceName) {
+            const btn = document.getElementById('btnMidiConnect');
+            const dot = document.getElementById('midiStatusDot');
+            const text = document.getElementById('midiStatusText');
+
+            if (isConnected) {
+                btn.className = 'px-2.5 py-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900/80 text-xs font-semibold text-emerald-200 border border-emerald-500/50 transition flex items-center gap-1.5 shadow-sm shadow-emerald-500/20';
+                dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+                text.textContent = `MIDI: ${deviceName}`;
+            } else {
+                btn.className = 'px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700/80 transition flex items-center gap-1.5';
+                dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+                text.textContent = 'Hubungkan MIDI';
+            }
+        }
+
+        function showMidiBannerMessage(htmlContent) {
+            const bar = document.getElementById('midiControlBar');
+            const feedback = document.getElementById('midiLiveFeedback');
+            if (bar) bar.classList.remove('hidden');
+            if (feedback) feedback.innerHTML = htmlContent;
+        }
+
+        function shiftMidiOctave(delta) {
+            state.midiOctaveShift = Math.max(-2, Math.min(2, state.midiOctaveShift + delta));
+            const label = state.midiOctaveShift > 0 ? `+${state.midiOctaveShift}` : `${state.midiOctaveShift}`;
+            document.getElementById('midiOctaveValue').textContent = label;
+        }
+
+        function toggleMidiAutoFold() {
+            state.midiAutoFitScreen = !state.midiAutoFitScreen;
+            const btn = document.getElementById('btnMidiAutoFold');
+            if (state.midiAutoFitScreen) {
+                btn.textContent = 'Auto-Fit: ON';
+                btn.className = 'px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold text-[11px]';
+            } else {
+                btn.textContent = 'Auto-Fit: OFF';
+                btn.className = 'px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 font-semibold text-[11px]';
+            }
+        }
+
+        /**
+         * Handler utama pesan MIDI (Note On 0x90 & Note Off 0x80)
+         */
+        function handleMidiMessage(message) {
+            const [status, noteNumber, velocity] = message.data;
+            const command = status & 0xf0;
+
+            // Note On (144 / 0x90) dengan velocity > 0
+            if (command === 144 && velocity > 0) {
+                const shiftedMidi = noteNumber + (state.midiOctaveShift * 12);
+                const velNorm = velocity / 127;
+
+                // Bunyikan audio piano sesuai pitch yang telah di-shift oktaf
+                startSustainedMidiNote(noteNumber, shiftedMidi, velNorm);
+
+                // Tentukan posisi tuts visual di layar (C3..B4 = 48..71)
+                let visualMidi = shiftedMidi;
+                if (state.midiAutoFitScreen) {
+                    while (visualMidi < START_MIDI) visualMidi += 12;
+                    while (visualMidi > END_MIDI) visualMidi -= 12;
+                }
+
+                const pitchClass = ((shiftedMidi % 12) + 12) % 12;
+                state.activeMidiNotes.set(noteNumber, {
+                    visualMidi,
+                    shiftedMidi,
+                    pitchClass,
+                    velocity
+                });
+
+                refreshMidiKeyVisuals();
+                updateMidiLiveDetector();
+            }
+            // Note Off (128 / 0x80) atau Note On dengan velocity === 0
+            else if (command === 128 || (command === 144 && velocity === 0)) {
+                stopSustainedMidiNote(noteNumber);
+                state.activeMidiNotes.delete(noteNumber);
+                refreshMidiKeyVisuals();
+                updateMidiLiveDetector();
+            }
+        }
+
+        /**
+         * Menyalakan warna tuts virtual piano sesuai input MIDI & menandai hijau jika cocok target
+         */
+        function refreshMidiKeyVisuals() {
+            document.querySelectorAll('.key-white, .key-black').forEach(el => {
+                el.classList.remove('midi-pressed', 'midi-target-hit');
+            });
+
+            state.activeMidiNotes.forEach(info => {
+                const keyEl = document.querySelector(`[data-midi="${info.visualMidi}"]`);
+                if (keyEl) {
+                    const isTargetHit = state.targetPitchClasses.has(info.pitchClass);
+                    keyEl.classList.add(isTargetHit ? 'midi-target-hit' : 'midi-pressed');
+                }
+            });
+        }
+
+        /**
+         * Detektor Nada & Kord Real-Time saat menekan tuts MIDI
+         */
+        function updateMidiLiveDetector() {
+            const feedback = document.getElementById('midiLiveFeedback');
+            if (!feedback) return;
+
+            if (state.activeMidiNotes.size === 0) {
+                feedback.innerHTML = `<span class="text-slate-400">Siap • Tekan tuts pada <strong>${state.midiDeviceName || 'MIDI Keyboard'}</strong></span>`;
+                return;
+            }
+
+            const notesArr = Array.from(state.activeMidiNotes.values()).sort((a, b) => a.shiftedMidi - b.shiftedMidi);
+            const noteNames = notesArr.map(n => {
+                const name = NOTE_NAMES_SHARP[n.pitchClass];
+                const oct = Math.floor(n.shiftedMidi / 12) - 1;
+                return `${name}${oct}`;
+            });
+
+            const uniquePitches = [...new Set(notesArr.map(n => n.pitchClass))];
+            const detectedChord = detectSimpleChordName(uniquePitches);
+            const allMatchTarget = state.targetPitchClasses.size > 0 && notesArr.every(n => state.targetPitchClasses.has(n.pitchClass));
+
+            const badgeStatus = allMatchTarget
+                ? `<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-[10px] ml-1"><i class="fa-solid fa-check mr-0.5"></i>Cocok Target!</span>`
+                : '';
+
+            feedback.innerHTML = `
+                <span class="text-sky-300 font-mono font-bold">${noteNames.join(' - ')}</span>
+                ${detectedChord ? `<span class="text-amber-300 font-bold ml-1.5">[Kord: ${detectedChord}]</span>` : ''}
+                ${badgeStatus}
+            `;
+        }
+
+        function detectSimpleChordName(uniquePitches) {
+            if (uniquePitches.length < 3) return '';
+            for (const root of uniquePitches) {
+                const intervals = uniquePitches.map(p => (p - root + 12) % 12).sort((a, b) => a - b);
+                const key = intervals.join(',');
+                const rootName = NOTE_NAMES_SHARP[root];
+                if (key === '0,4,7') return `${rootName} Major`;
+                if (key === '0,3,7') return `${rootName}m`;
+                if (key === '0,4,7,10') return `${rootName}7`;
+                if (key === '0,4,7,11') return `${rootName}Maj7`;
+                if (key === '0,3,7,10') return `${rootName}m7`;
+                if (key === '0,2,7') return `${rootName}sus2`;
+                if (key === '0,5,7') return `${rootName}sus4`;
+                if (key === '0,3,6') return `${rootName}dim`;
+                if (key === '0,4,8') return `${rootName}aug`;
+            }
+            return '';
+        }
+
+        /**
+         * 11. INISIALISASI APLIKASI SAAT HALAMAN DIMUAT
+         */
+        window.addEventListener('DOMContentLoaded', () => {
+            buildPianoKeyboard();
+            initChordTabUI();
+            initScaleTabUI();
+            initProgressionTabUI();
+            initPatternTabUI();
+
+            // Tampilkan C Major di awal
+            updateChordDisplay(false);
+
+            // Auto-deteksi diam-diam jika perangkat MIDI sudah terpasang saat halaman dibuka
+            if (navigator.requestMIDIAccess) {
+                navigator.requestMIDIAccess({ sysex: false }).then(access => {
+                    state.midiAccess = access;
+                    access.onstatechange = () => bindMidiInputs();
+                    const connected = Array.from(access.inputs.values()).filter(i => i.state === 'connected');
+                    if (connected.length > 0) {
+                        bindMidiInputs();
+                    }
+                }).catch(() => {});
+            }
+        });
+    </script>
+</body>
+</html>
